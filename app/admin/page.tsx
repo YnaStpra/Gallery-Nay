@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Camera, Database, ImagePlus, LockKeyhole } from "lucide-react";
 
+import { PhotoManager } from "./_components/photo-manager";
 import { PhotoUploadForm } from "./_components/photo-upload-form";
 import {
   getMissingCloudinaryEnv,
@@ -25,6 +26,10 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   year: "numeric",
 });
 
+function formatDateInput(date: Date | null) {
+  return date ? date.toISOString().slice(0, 10) : "";
+}
+
 export default async function AdminPage() {
   const missingConfig = [
     ...getMissingCloudinaryEnv(),
@@ -33,10 +38,39 @@ export default async function AdminPage() {
   const isConfigured =
     isCloudinaryConfigured() && Boolean(process.env.ADMIN_UPLOAD_KEY);
 
-  const recentPhotos = await prisma.photo.findMany({
+  const photos = await prisma.photo.findMany({
     orderBy: { createdAt: "desc" },
-    take: 8,
   });
+  const publishedCount = photos.filter((photo) => photo.published).length;
+  const collections = Array.from(
+    new Set(
+      photos
+        .map((photo) => photo.collection)
+        .filter((collection): collection is string => Boolean(collection)),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
+  const managedPhotos = photos.map((photo) => ({
+    altText: photo.altText ?? "",
+    aperture: photo.aperture ?? "",
+    camera: photo.camera ?? "",
+    collection: photo.collection ?? "",
+    colorProfile: photo.colorProfile ?? "",
+    copyright: photo.copyright ?? "",
+    country: photo.country ?? "",
+    createdAt: dateFormatter.format(photo.createdAt),
+    description: photo.description ?? "",
+    dominantColor: photo.dominantColor ?? "#64748b",
+    focalLength: photo.focalLength ?? "",
+    id: photo.id,
+    imageUrl: photo.imageUrl,
+    iso: photo.iso ? String(photo.iso) : "",
+    lens: photo.lens ?? "",
+    location: photo.location ?? "",
+    published: photo.published,
+    shutterSpeed: photo.shutterSpeed ?? "",
+    takenAt: formatDateInput(photo.takenAt),
+    title: photo.title,
+  }));
 
   return (
     <main className="min-h-screen bg-[#050505] px-4 py-8 text-zinc-50 sm:px-8 lg:px-12">
@@ -60,16 +94,16 @@ export default async function AdminPage() {
             <div className="rounded-lg border border-white/10 bg-zinc-950 p-4">
               <Database className="size-5 text-amber-200" aria-hidden />
               <span className="mt-3 block text-2xl font-semibold text-white">
-                {recentPhotos.length}
+                {photos.length}
               </span>
-              <span>Recent records</span>
+              <span>Total records</span>
             </div>
             <div className="rounded-lg border border-white/10 bg-zinc-950 p-4">
               <Camera className="size-5 text-cyan-200" aria-hidden />
               <span className="mt-3 block text-2xl font-semibold text-white">
-                {isConfigured ? "Ready" : "Setup"}
+                {publishedCount}
               </span>
-              <span>Upload status</span>
+              <span>Published</span>
             </div>
           </div>
         </header>
@@ -89,8 +123,8 @@ export default async function AdminPage() {
           <aside className="rounded-lg border border-white/10 bg-zinc-950 p-5">
             <h2 className="text-xl font-semibold text-white">Latest uploads</h2>
             <div className="mt-5 grid gap-3">
-              {recentPhotos.length > 0 ? (
-                recentPhotos.map((photo) => (
+              {photos.length > 0 ? (
+                photos.slice(0, 6).map((photo) => (
                   <div
                     key={photo.id}
                     className="grid gap-3 rounded-md border border-white/10 bg-black p-4"
@@ -145,6 +179,8 @@ export default async function AdminPage() {
             </div>
           </aside>
         </section>
+
+        <PhotoManager collections={collections} photos={managedPhotos} />
       </div>
     </main>
   );

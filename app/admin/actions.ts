@@ -2,7 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 
-import { uploadPhotoToCloudinary } from "@/src/lib/cloudinary";
+import {
+  deletePhotoFromCloudinary,
+  extractCloudinaryPublicId,
+  isCloudinaryConfigured,
+  uploadPhotoToCloudinary,
+} from "@/src/lib/cloudinary";
 import { prisma } from "@/src/lib/prisma";
 
 export type AdminActionState = {
@@ -38,9 +43,21 @@ function getOptionalInteger(formData: FormData, name: string) {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function getNullableText(formData: FormData, name: string) {
+  return getOptionalText(formData, name) ?? null;
+}
+
+function getNullableInteger(formData: FormData, name: string) {
+  return getOptionalInteger(formData, name) ?? null;
+}
+
 function getOptionalDate(formData: FormData, name: string) {
   const value = getText(formData, name);
   return value ? new Date(`${value}T00:00:00.000Z`) : undefined;
+}
+
+function getNullableDate(formData: FormData, name: string) {
+  return getOptionalDate(formData, name) ?? null;
 }
 
 function slugify(value: string) {
@@ -60,10 +77,7 @@ function fail(message: string): AdminActionState {
   };
 }
 
-export async function uploadPhoto(
-  _previousState: AdminActionState,
-  formData: FormData,
-): Promise<AdminActionState> {
+function authorizeAdmin(formData: FormData) {
   const adminUploadKey = process.env.ADMIN_UPLOAD_KEY;
 
   if (!adminUploadKey) {
@@ -72,6 +86,19 @@ export async function uploadPhoto(
 
   if (getText(formData, "adminKey") !== adminUploadKey) {
     return fail("Admin key salah.");
+  }
+
+  return undefined;
+}
+
+export async function uploadPhoto(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const authError = authorizeAdmin(formData);
+
+  if (authError) {
+    return authError;
   }
 
   if (
@@ -115,6 +142,7 @@ export async function uploadPhoto(
         aperture: getOptionalText(formData, "aperture"),
         blurDataUrl: undefined,
         camera: getOptionalText(formData, "camera"),
+        cloudinaryPublicId: uploaded.public_id,
         collection: getOptionalText(formData, "collection"),
         colorProfile: getOptionalText(formData, "colorProfile") ?? "sRGB",
         copyright:
@@ -153,5 +181,123 @@ export async function uploadPhoto(
   } catch (error) {
     console.error("Failed to upload photo", error);
     return fail("Upload gagal. Cek koneksi Cloudinary, Neon, dan ukuran file.");
+  }
+}
+
+export async function updatePhoto(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const authError = authorizeAdmin(formData);
+
+  if (authError) {
+    return authError;
+  }
+
+  const id = getText(formData, "id");
+  const title = getText(formData, "title");
+
+  if (!id) {
+    return fail("ID foto tidak valid.");
+  }
+
+  if (!title) {
+    return fail("Judul foto wajib diisi.");
+  }
+
+  try {
+    const photo = await prisma.photo.update({
+      data: {
+        altText: getNullableText(formData, "altText"),
+        aperture: getNullableText(formData, "aperture"),
+        camera: getNullableText(formData, "camera"),
+        collection: getNullableText(formData, "collection"),
+        colorProfile: getNullableText(formData, "colorProfile"),
+        copyright: getNullableText(formData, "copyright"),
+        country: getNullableText(formData, "country"),
+        description: getNullableText(formData, "description"),
+        dominantColor: getNullableText(formData, "dominantColor"),
+        focalLength: getNullableText(formData, "focalLength"),
+        iso: getNullableInteger(formData, "iso"),
+        lens: getNullableText(formData, "lens"),
+        location: getNullableText(formData, "location"),
+        published: formData.get("published") === "on",
+        shutterSpeed: getNullableText(formData, "shutterSpeed"),
+        takenAt: getNullableDate(formData, "takenAt"),
+        title,
+      },
+      where: { id },
+    });
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+
+    return {
+      message: `"${photo.title}" berhasil diperbarui.`,
+      photoId: photo.id,
+      status: "success",
+    };
+  } catch (error) {
+    console.error("Failed to update photo", error);
+    return fail("Update foto gagal. Cek data dan koneksi database.");
+  }
+}
+
+export async function deletePhoto(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const authError = authorizeAdmin(formData);
+
+  if (authError) {
+    return authError;
+  }
+
+  const id = getText(formData, "id");
+
+  if (!id) {
+    return fail("ID foto tidak valid.");
+  }
+
+  try {
+    const photo = await prisma.photo.findUnique({
+      select: {
+        cloudinaryPublicId: true,
+        id: true,
+        imageUrl: true,
+        title: true,
+      },
+      where: { id },
+    });
+
+    if (!photo) {
+      return fail("Foto tidak ditemukan.");
+    }
+
+    await prisma.photo.delete({
+      where: { id },
+    });
+
+    const publicId =
+      photo.cloudinaryPublicId ?? extractCloudinaryPublicId(photo.imageUrl);
+
+    if (publicId && isCloudinaryConfigured()) {
+      try {
+        await deletePhotoFromCloudinary(publicId);
+      } catch (error) {
+        console.error("Failed to delete Cloudinary asset", error);
+      }
+    }
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+
+    return {
+      message: `"${photo.title}" berhasil dihapus dari database.`,
+      status: "success",
+    };
+  } catch (error) {
+    console.error("Failed to delete photo", error);
+    return fail("Hapus foto gagal. Cek koneksi database.");
   }
 }

@@ -77,3 +77,51 @@ export async function uploadPhotoToCloudinary(
     uploadStream.end(buffer);
   });
 }
+
+export async function deletePhotoFromCloudinary(publicId: string) {
+  configureCloudinary();
+
+  return cloudinary.uploader.destroy(publicId, {
+    resource_type: "image",
+  });
+}
+
+export function extractCloudinaryPublicId(imageUrl: string) {
+  try {
+    const url = new URL(imageUrl);
+
+    if (!url.hostname.includes("res.cloudinary.com")) {
+      return undefined;
+    }
+
+    const segments = url.pathname.split("/").filter(Boolean);
+    const uploadIndex = segments.indexOf("upload");
+
+    if (uploadIndex === -1) {
+      return undefined;
+    }
+
+    const uploadSegments = segments.slice(uploadIndex + 1);
+    const versionIndex = uploadSegments.findIndex((segment) =>
+      /^v\d+$/.test(segment),
+    );
+    const publicIdSegments =
+      versionIndex >= 0
+        ? uploadSegments.slice(versionIndex + 1)
+        : uploadSegments;
+
+    if (publicIdSegments.length === 0) {
+      return undefined;
+    }
+
+    const lastSegment = publicIdSegments[publicIdSegments.length - 1];
+    const lastDotIndex = lastSegment.lastIndexOf(".");
+
+    publicIdSegments[publicIdSegments.length - 1] =
+      lastDotIndex > 0 ? lastSegment.slice(0, lastDotIndex) : lastSegment;
+
+    return publicIdSegments.join("/");
+  } catch {
+    return undefined;
+  }
+}
