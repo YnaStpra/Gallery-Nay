@@ -13,11 +13,10 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 import { ProtectedPhoto } from "./_components/protected-photo";
-import { galleryPhotos } from "@/src/lib/gallery-data";
+import { getGalleryPhotos } from "@/src/lib/gallery-data";
 import type { GalleryPhoto } from "@/src/lib/gallery-data";
 
-const featuredPhoto = galleryPhotos[0];
-const previewPhotos = galleryPhotos.slice(1, 4);
+export const dynamic = "force-dynamic";
 
 function MetadataItem({
   icon: Icon,
@@ -58,7 +57,16 @@ function PhotoMetadata({ photo }: { photo: GalleryPhoto }) {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const galleryPhotos = await getGalleryPhotos();
+  const featuredPhoto = galleryPhotos[0];
+  const previewPhotos = galleryPhotos.slice(1, 4);
+  const placeCount = new Set(
+    galleryPhotos
+      .map((photo) => photo.location)
+      .filter((location) => location !== "Not set"),
+  ).size;
+
   return (
     <main className="min-h-screen bg-[#050505] text-zinc-50">
       <section className="relative min-h-[86svh] overflow-hidden">
@@ -125,38 +133,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="relative z-30 -mt-10 px-4 pb-8 sm:px-8 lg:px-12">
-        <div className="grid gap-3 sm:grid-cols-3">
-          {previewPhotos.map((photo) => (
-            <article
-              key={photo.id}
-              className="overflow-hidden rounded-lg border border-white/10 bg-zinc-950 shadow-2xl shadow-black/30"
-            >
-              <ProtectedPhoto
-                src={photo.imageUrl}
-                alt={photo.alt}
-                className="h-36"
-                sizes="(min-width: 768px) 30vw, 100vw"
-              />
-              <div className="flex items-center justify-between gap-3 px-4 py-3">
-                <div className="min-w-0">
-                  <h2 className="truncate text-sm font-medium text-white">
-                    {photo.title}
-                  </h2>
-                  <p className="mt-1 truncate text-xs text-zinc-500">
-                    {photo.location}
-                  </p>
-                </div>
-                <span
-                  className="size-3 shrink-0 rounded-sm"
-                  style={{ backgroundColor: photo.dominantColor }}
-                  aria-label={`Dominant color ${photo.dominantColor}`}
+      {previewPhotos.length > 0 ? (
+        <section className="relative z-30 -mt-10 px-4 pb-8 sm:px-8 lg:px-12">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {previewPhotos.map((photo) => (
+              <article
+                key={photo.id}
+                className="overflow-hidden rounded-lg border border-white/10 bg-zinc-950 shadow-2xl shadow-black/30"
+              >
+                <ProtectedPhoto
+                  src={photo.imageUrl}
+                  alt={photo.alt}
+                  className="h-36"
+                  sizes="(min-width: 768px) 30vw, 100vw"
                 />
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+                <div className="flex items-center justify-between gap-3 px-4 py-3">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-sm font-medium text-white">
+                      {photo.title}
+                    </h2>
+                    <p className="mt-1 truncate text-xs text-zinc-500">
+                      {photo.location}
+                    </p>
+                  </div>
+                  <span
+                    className="size-3 shrink-0 rounded-sm"
+                    style={{ backgroundColor: photo.dominantColor }}
+                    aria-label={`Dominant color ${photo.dominantColor}`}
+                  />
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="px-4 py-12 sm:px-8 lg:px-12">
         <div className="mb-8 flex flex-col justify-between gap-5 border-b border-white/10 pb-6 lg:flex-row lg:items-end">
@@ -176,7 +186,9 @@ export default function HomePage() {
               <span>Photos</span>
             </div>
             <div>
-              <span className="block text-2xl font-semibold text-white">6</span>
+              <span className="block text-2xl font-semibold text-white">
+                {placeCount}
+              </span>
               <span>Places</span>
             </div>
             <div>

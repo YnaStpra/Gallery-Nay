@@ -1,3 +1,5 @@
+import { prisma } from "./prisma";
+
 export type GalleryPhoto = {
   id: string;
   title: string;
@@ -13,7 +15,7 @@ export type GalleryPhoto = {
   focalLength: string;
   aperture: string;
   shutterSpeed: string;
-  iso: number;
+  iso: string;
   dimensions: string;
   fileType: string;
   colorProfile: string;
@@ -21,7 +23,7 @@ export type GalleryPhoto = {
   copyright: string;
 };
 
-export const galleryPhotos: GalleryPhoto[] = [
+export const fallbackGalleryPhotos: GalleryPhoto[] = [
   {
     id: "sanur-morning-tide",
     title: "Morning Tide at Sanur",
@@ -38,7 +40,7 @@ export const galleryPhotos: GalleryPhoto[] = [
     focalLength: "35mm",
     aperture: "f/5.6",
     shutterSpeed: "1/640",
-    iso: 100,
+    iso: "100",
     dimensions: "6000 x 4000",
     fileType: "WEBP display copy",
     colorProfile: "Display P3",
@@ -61,7 +63,7 @@ export const galleryPhotos: GalleryPhoto[] = [
     focalLength: "112mm",
     aperture: "f/8",
     shutterSpeed: "1/320",
-    iso: 160,
+    iso: "160",
     dimensions: "6000 x 4000",
     fileType: "WEBP display copy",
     colorProfile: "sRGB",
@@ -84,7 +86,7 @@ export const galleryPhotos: GalleryPhoto[] = [
     focalLength: "24mm",
     aperture: "f/4",
     shutterSpeed: "1/250",
-    iso: 320,
+    iso: "320",
     dimensions: "7728 x 5152",
     fileType: "WEBP display copy",
     colorProfile: "sRGB",
@@ -107,7 +109,7 @@ export const galleryPhotos: GalleryPhoto[] = [
     focalLength: "22mm",
     aperture: "f/7.1",
     shutterSpeed: "1/500",
-    iso: 100,
+    iso: "100",
     dimensions: "6000 x 4000",
     fileType: "WEBP display copy",
     colorProfile: "Display P3",
@@ -130,7 +132,7 @@ export const galleryPhotos: GalleryPhoto[] = [
     focalLength: "23mm",
     aperture: "f/2.8",
     shutterSpeed: "1/1000",
-    iso: 125,
+    iso: "125",
     dimensions: "7728 x 5152",
     fileType: "WEBP display copy",
     colorProfile: "sRGB",
@@ -153,7 +155,7 @@ export const galleryPhotos: GalleryPhoto[] = [
     focalLength: "50mm",
     aperture: "f/6.3",
     shutterSpeed: "1/800",
-    iso: 100,
+    iso: "100",
     dimensions: "6000 x 4000",
     fileType: "WEBP display copy",
     colorProfile: "Display P3",
@@ -176,7 +178,7 @@ export const galleryPhotos: GalleryPhoto[] = [
     focalLength: "28mm eq.",
     aperture: "f/2.8",
     shutterSpeed: "1/125",
-    iso: 800,
+    iso: "800",
     dimensions: "6000 x 4000",
     fileType: "WEBP display copy",
     colorProfile: "sRGB",
@@ -199,7 +201,7 @@ export const galleryPhotos: GalleryPhoto[] = [
     focalLength: "28mm",
     aperture: "f/9",
     shutterSpeed: "1/200",
-    iso: 200,
+    iso: "200",
     dimensions: "6000 x 4000",
     fileType: "WEBP display copy",
     colorProfile: "Display P3",
@@ -207,3 +209,55 @@ export const galleryPhotos: GalleryPhoto[] = [
     copyright: "(c) Yan Saputra",
   },
 ];
+
+const dateFormatter = new Intl.DateTimeFormat("en", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
+
+function formatPhotoDate(date: Date | null) {
+  return date ? dateFormatter.format(date) : "Date not set";
+}
+
+export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
+  try {
+    const photos = await prisma.photo.findMany({
+      orderBy: [{ takenAt: "desc" }, { createdAt: "desc" }],
+      where: { published: true },
+    });
+
+    if (photos.length === 0) {
+      return fallbackGalleryPhotos;
+    }
+
+    return photos.map((photo) => ({
+      alt: photo.altText ?? photo.title,
+      aperture: photo.aperture ?? "Not set",
+      camera: photo.camera ?? "Not set",
+      collection: photo.collection ?? "Published Archive",
+      colorProfile: photo.colorProfile ?? "sRGB",
+      copyright: photo.copyright ?? "(c) Yan Saputra",
+      country: photo.country ?? "Not set",
+      dimensions:
+        photo.width && photo.height
+          ? `${photo.width} x ${photo.height}`
+          : "Not set",
+      dominantColor: photo.dominantColor ?? "#64748b",
+      fileType: photo.fileType ?? "Display copy",
+      focalLength: photo.focalLength ?? "Not set",
+      id: photo.id,
+      imageUrl: photo.imageUrl,
+      iso: photo.iso ? String(photo.iso) : "Not set",
+      lens: photo.lens ?? "Not set",
+      location: photo.location ?? "Not set",
+      shutterSpeed: photo.shutterSpeed ?? "Not set",
+      story: photo.description ?? "Published travel frame.",
+      takenAt: formatPhotoDate(photo.takenAt),
+      title: photo.title,
+    }));
+  } catch (error) {
+    console.error("Failed to load gallery photos from database", error);
+    return fallbackGalleryPhotos;
+  }
+}
