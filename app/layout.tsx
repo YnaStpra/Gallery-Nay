@@ -13,8 +13,36 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "My Travel Gallery",
-  description: "Photography moments by Yan",
+  applicationName: "My Travel Gallery",
+  authors: [{ name: "Yan Saputra" }],
+  creator: "Yan Saputra",
+  description:
+    "A public travel photography archive by Yan Saputra with protected viewing and complete image metadata.",
+  keywords: [
+    "travel photography",
+    "photo gallery",
+    "Yan Saputra",
+    "Indonesia photography",
+    "photo metadata",
+  ],
+  openGraph: {
+    description:
+      "Travel frames by Yan Saputra with location, camera, lens, exposure, and rights metadata.",
+    locale: "en_US",
+    siteName: "My Travel Gallery",
+    title: "My Travel Gallery",
+    type: "website",
+  },
+  title: {
+    default: "My Travel Gallery",
+    template: "%s | My Travel Gallery",
+  },
+  twitter: {
+    card: "summary_large_image",
+    description:
+      "Travel frames by Yan Saputra with location, camera, lens, exposure, and rights metadata.",
+    title: "My Travel Gallery",
+  },
 };
 
 export default function RootLayout({

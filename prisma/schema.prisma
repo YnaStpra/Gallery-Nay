@@ -8,10 +8,31 @@ datasource db {
 }
 
 model Photo {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  imageUrl    String
-  location    String?
-  createdAt   DateTime @default(now())
+  id             String   @id @default(cuid())
+  title          String
+  slug           String?
+  description    String?
+  imageUrl       String
+  blurDataUrl    String?
+  altText        String?
+  location       String?
+  country        String?
+  collection     String?
+  takenAt        DateTime?
+  camera         String?
+  lens           String?
+  focalLength    String?
+  aperture       String?
+  shutterSpeed   String?
+  iso            Int?
+  width          Int?
+  height         Int?
+  fileType       String?
+  colorProfile   String?
+  dominantColor  String?
+  copyright      String?
+  isDownloadable Boolean  @default(false)
+  published      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
