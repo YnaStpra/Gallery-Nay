@@ -83,16 +83,16 @@ function PhotoManagementCard({
 
   return (
     <article className="overflow-hidden rounded-lg border border-white/10 bg-zinc-950">
-      <div className="grid gap-0 lg:grid-cols-[280px_1fr]">
-        <div className="relative">
+      <div className="grid gap-0 lg:grid-cols-[190px_1fr]">
+        <div className="relative border-b border-white/10 bg-black p-3 lg:border-b-0 lg:border-r">
           <ProtectedPhoto
             alt={photo.altText || photo.title}
-            className="aspect-[4/3] lg:h-full"
+            className="h-40 rounded-md lg:h-44"
             src={photo.imageUrl}
-            sizes="(min-width: 1024px) 280px, 100vw"
+            sizes="(min-width: 1024px) 190px, 100vw"
           />
           <span
-            className={`absolute left-3 top-3 z-30 inline-flex items-center gap-1.5 rounded px-2 py-1 text-[10px] font-medium uppercase tracking-[0.14em] ${
+            className={`absolute left-5 top-5 z-30 inline-flex items-center gap-1.5 rounded px-2 py-1 text-[10px] font-medium uppercase tracking-[0.14em] ${
               photo.published
                 ? "bg-emerald-300/90 text-black"
                 : "bg-zinc-900/85 text-zinc-200"
