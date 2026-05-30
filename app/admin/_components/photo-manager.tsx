@@ -12,9 +12,9 @@ import { useActionState, useState } from "react";
 import { ProtectedPhoto } from "@/app/_components/protected-photo";
 import {
   deletePhoto,
-  initialAdminActionState,
   updatePhoto,
 } from "@/app/admin/actions";
+import type { AdminActionState } from "@/app/admin/actions";
 
 export type ManagedPhoto = {
   altText: string;
@@ -46,6 +46,11 @@ type PhotoManagerProps = {
 
 const inputClassName =
   "min-h-10 rounded-md border border-white/10 bg-black px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300/70 focus:ring-2 focus:ring-cyan-300/20";
+
+const initialAdminActionState: AdminActionState = {
+  message: "",
+  status: "idle",
+};
 
 function Field({
   children,

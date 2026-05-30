@@ -16,11 +16,6 @@ export type AdminActionState = {
   status: "idle" | "success" | "error";
 };
 
-export const initialAdminActionState: AdminActionState = {
-  message: "",
-  status: "idle",
-};
-
 const maxImageSize = 10 * 1024 * 1024;
 
 function getText(formData: FormData, name: string) {

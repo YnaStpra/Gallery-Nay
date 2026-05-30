@@ -4,10 +4,8 @@ import { Loader2, UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef } from "react";
 
-import {
-  initialAdminActionState,
-  uploadPhoto,
-} from "@/app/admin/actions";
+import { uploadPhoto } from "@/app/admin/actions";
+import type { AdminActionState } from "@/app/admin/actions";
 
 type PhotoUploadFormProps = {
   isConfigured: boolean;
@@ -31,6 +29,11 @@ function Field({
 
 const inputClassName =
   "min-h-11 rounded-md border border-white/10 bg-black px-3 py-2 text-sm text-white outline-none transition focus:border-cyan-300/70 focus:ring-2 focus:ring-cyan-300/20";
+
+const initialAdminActionState: AdminActionState = {
+  message: "",
+  status: "idle",
+};
 
 export function PhotoUploadForm({
   isConfigured,
