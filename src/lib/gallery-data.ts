@@ -23,6 +23,14 @@ export type GalleryPhoto = {
   copyright: string;
 };
 
+export type GalleryAlbum = {
+  collection: string;
+  slug: string;
+  description: string;
+  coverPhoto: GalleryPhoto;
+  photoCount: number;
+};
+
 export const fallbackGalleryPhotos: GalleryPhoto[] = [
   {
     id: "sanur-morning-tide",
@@ -73,7 +81,8 @@ export const fallbackGalleryPhotos: GalleryPhoto[] = [
   {
     id: "toraja-mist",
     title: "Toraja Mist",
-    story: "Morning fog lifting from a valley of timber houses and rice fields.",
+    story:
+      "Morning fog lifting from a valley of timber houses and rice fields.",
     imageUrl:
       "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1400&q=86",
     alt: "Green forest valley covered in low morning mist.",
@@ -216,6 +225,14 @@ const dateFormatter = new Intl.DateTimeFormat("en", {
   year: "numeric",
 });
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
 function formatPhotoDate(date: Date | null) {
   return date ? dateFormatter.format(date) : "Date not set";
 }
@@ -260,4 +277,34 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
     console.error("Failed to load gallery photos from database", error);
     return fallbackGalleryPhotos;
   }
+}
+
+export async function getGalleryAlbums(): Promise<GalleryAlbum[]> {
+  const photos = await getGalleryPhotos();
+  const albumMap = new Map<string, GalleryPhoto[]>();
+
+  for (const photo of photos) {
+    const collection = photo.collection || "Untitled";
+    const existing = albumMap.get(collection);
+    if (existing) {
+      existing.push(photo);
+    } else {
+      albumMap.set(collection, [photo]);
+    }
+  }
+
+  return Array.from(albumMap.entries()).map(([collection, photos]) => ({
+    collection,
+    slug: slugify(collection),
+    description: photos[0]?.story ?? "A curated set of travel frames.",
+    coverPhoto: photos[0],
+    photoCount: photos.length,
+  }));
+}
+
+export async function getGalleryPhotosByCollectionSlug(
+  slug: string,
+): Promise<GalleryPhoto[]> {
+  const photos = await getGalleryPhotos();
+  return photos.filter((photo) => slugify(photo.collection) === slug);
 }

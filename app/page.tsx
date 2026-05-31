@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   Aperture,
   CalendarDays,
@@ -84,13 +85,21 @@ export default async function HomePage() {
           <span className="text-sm font-semibold uppercase tracking-[0.24em] text-white">
             My Travel Gallery
           </span>
-          <div className="hidden items-center gap-5 text-xs font-medium uppercase tracking-[0.18em] text-white/72 sm:flex">
-            <span>Archive</span>
-            <span>Metadata</span>
-            <span className="inline-flex items-center gap-2">
-              <LockKeyhole className="size-3.5" aria-hidden />
-              View only
-            </span>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/albums"
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/10 hover:text-cyan-100"
+            >
+              Albums
+            </Link>
+            <div className="hidden items-center gap-5 text-xs font-medium uppercase tracking-[0.18em] text-white/72 sm:flex">
+              <span>Archive</span>
+              <span>Metadata</span>
+              <span className="inline-flex items-center gap-2">
+                <LockKeyhole className="size-3.5" aria-hidden />
+                View only
+              </span>
+            </div>
           </div>
         </nav>
 
