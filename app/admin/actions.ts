@@ -140,12 +140,10 @@ export async function uploadPhoto(
         cloudinaryPublicId: uploaded.public_id,
         collection: getOptionalText(formData, "collection"),
         colorProfile: getOptionalText(formData, "colorProfile") ?? "sRGB",
-        copyright:
-          getOptionalText(formData, "copyright") ?? "(c) Yan Saputra",
+        copyright: getOptionalText(formData, "copyright") ?? "(c) Yan Saputra",
         country: getOptionalText(formData, "country"),
         description: getOptionalText(formData, "description"),
-        dominantColor:
-          getOptionalText(formData, "dominantColor") ?? "#64748b",
+        dominantColor: getOptionalText(formData, "dominantColor") ?? "#64748b",
         fileType: uploaded.format
           ? `${uploaded.format.toUpperCase()} display copy`
           : image.type,
@@ -294,5 +292,141 @@ export async function deletePhoto(
   } catch (error) {
     console.error("Failed to delete photo", error);
     return fail("Hapus foto gagal. Cek koneksi database.");
+  }
+}
+
+export async function createStory(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const authError = authorizeAdmin(formData);
+  if (authError) {
+    return authError;
+  }
+
+  const title = getText(formData, "title");
+  const coverImage = getText(formData, "coverImage");
+
+  if (!title) {
+    return fail("Judul story wajib diisi.");
+  }
+
+  if (!coverImage) {
+    return fail("URL cover image wajib diisi.");
+  }
+
+  try {
+    const content = getText(formData, "content");
+    const parsedContent = content ? JSON.parse(content) : [];
+    const story = await prisma.story.create({
+      data: {
+        title,
+        slug: slugify(title),
+        excerpt: getOptionalText(formData, "excerpt"),
+        coverImage,
+        content: Array.isArray(parsedContent) ? parsedContent : [],
+        location: getOptionalText(formData, "location"),
+        country: getOptionalText(formData, "country"),
+        published: formData.get("published") === "on",
+        publishedAt: getOptionalDate(formData, "publishedAt"),
+      },
+    });
+
+    revalidatePath("/stories");
+    revalidatePath("/admin/stories");
+
+    return {
+      message: `"${story.title}" berhasil dibuat.`,
+      status: "success",
+      photoId: story.id,
+    };
+  } catch (error) {
+    console.error("Failed to create story", error);
+    return fail("Pembuatan story gagal. Pastikan JSON content valid.");
+  }
+}
+
+export async function updateStory(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const authError = authorizeAdmin(formData);
+  if (authError) {
+    return authError;
+  }
+
+  const id = getText(formData, "id");
+  const title = getText(formData, "title");
+
+  if (!id) {
+    return fail("ID story tidak valid.");
+  }
+
+  if (!title) {
+    return fail("Judul story wajib diisi.");
+  }
+
+  try {
+    const content = getText(formData, "content");
+    const parsedContent = content ? JSON.parse(content) : [];
+
+    const story = await prisma.story.update({
+      where: { id },
+      data: {
+        title,
+        excerpt: getOptionalText(formData, "excerpt"),
+        coverImage: getText(formData, "coverImage"),
+        content: Array.isArray(parsedContent) ? parsedContent : [],
+        location: getOptionalText(formData, "location"),
+        country: getOptionalText(formData, "country"),
+        published: formData.get("published") === "on",
+        publishedAt: getOptionalDate(formData, "publishedAt"),
+      },
+    });
+
+    revalidatePath("/stories");
+    revalidatePath("/admin/stories");
+
+    return {
+      message: `"${story.title}" berhasil diperbarui.`,
+      status: "success",
+      photoId: story.id,
+    };
+  } catch (error) {
+    console.error("Failed to update story", error);
+    return fail("Update story gagal. Pastikan JSON content valid.");
+  }
+}
+
+export async function deleteStory(
+  _previousState: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const authError = authorizeAdmin(formData);
+  if (authError) {
+    return authError;
+  }
+
+  const id = getText(formData, "id");
+
+  if (!id) {
+    return fail("ID story tidak valid.");
+  }
+
+  try {
+    const story = await prisma.story.delete({
+      where: { id },
+    });
+
+    revalidatePath("/stories");
+    revalidatePath("/admin/stories");
+
+    return {
+      message: `"${story.title}" berhasil dihapus.`,
+      status: "success",
+    };
+  } catch (error) {
+    console.error("Failed to delete story", error);
+    return fail("Hapus story gagal. Cek koneksi database.");
   }
 }

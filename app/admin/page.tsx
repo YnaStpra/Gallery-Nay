@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Camera, Database, ImagePlus, LockKeyhole } from "lucide-react";
 
 import { PhotoManager } from "./_components/photo-manager";
@@ -88,6 +89,14 @@ export default async function AdminPage() {
               Upload foto ke Cloudinary, simpan metadata ke Neon, dan tampilkan
               otomatis di homepage.
             </p>
+            <div className="mt-5">
+              <Link
+                href="/admin/stories"
+                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+              >
+                Manage stories
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-sm text-zinc-400 sm:min-w-[360px]">

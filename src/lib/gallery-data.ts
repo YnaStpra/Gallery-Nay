@@ -21,6 +21,7 @@ export type GalleryPhoto = {
   fileType: string;
   colorProfile: string;
   dominantColor: string;
+  blurDataUrl?: string;
   copyright: string;
   takenAtRaw?: string;
   slug?: string;
@@ -294,6 +295,7 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
           ? `${photo.width} x ${photo.height}`
           : "Not set",
       dominantColor: photo.dominantColor ?? "#64748b",
+      blurDataUrl: photo.blurDataUrl ?? undefined,
       fileType: photo.fileType ?? "Display copy",
       focalLength: photo.focalLength ?? "Not set",
       id: photo.id,
@@ -343,4 +345,178 @@ export async function getGalleryPhotosByCollectionSlug(
 ): Promise<GalleryPhoto[]> {
   const photos = await getGalleryPhotos();
   return photos.filter((photo) => slugify(photo.collection) === slug);
+}
+
+export type TimelinePoint = {
+  id: string;
+  year: string;
+  label: string;
+  location: string;
+  photoCount: number;
+  note: string;
+};
+
+export type JournalEntry = {
+  id: string;
+  month: string;
+  year: string;
+  location: string;
+  country: string;
+  photoCount: number;
+  note: string;
+  coverImage: string;
+};
+
+export type GearStat = {
+  label: string;
+  count: number;
+  usagePct: number;
+  collections: number;
+  countries: number;
+};
+
+export type InsightData = {
+  topCountries: [string, number][];
+  topCities: [string, number][];
+  topCameras: [string, number][];
+  topLenses: [string, number][];
+  yearGrowth: { year: string; count: number }[];
+};
+
+function toSortedEntries(map: Map<string, number>) {
+  return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+}
+
+export async function getTimelinePoints(): Promise<TimelinePoint[]> {
+  const photos = await getGalleryPhotos();
+  const groups = new Map<string, GalleryPhoto[]>();
+
+  for (const photo of photos) {
+    const year = photo.takenAtRaw
+      ? new Date(photo.takenAtRaw).getFullYear().toString()
+      : "Unknown";
+    const key = `${year}::${photo.location}`;
+    const entry = groups.get(key) ?? [];
+    entry.push(photo);
+    groups.set(key, entry);
+  }
+
+  return Array.from(groups.entries())
+    .map(([key, items]) => {
+      const [year, location] = key.split("::");
+      return {
+        id: `${year}-${location}`,
+        year,
+        label: `${location} · ${year}`,
+        location,
+        photoCount: items.length,
+        note: items[0]?.story ?? "A chapter in the travel archive.",
+      };
+    })
+    .sort(
+      (a, b) => Number(b.year) - Number(a.year) || b.photoCount - a.photoCount,
+    );
+}
+
+export async function getJournalEntries(): Promise<JournalEntry[]> {
+  const photos = await getGalleryPhotos();
+  const groups = new Map<string, GalleryPhoto[]>();
+
+  for (const photo of photos) {
+    const date = photo.takenAtRaw ? new Date(photo.takenAtRaw) : new Date();
+    const month = new Intl.DateTimeFormat("en", {
+      month: "long",
+      year: "numeric",
+    }).format(date);
+    const key = `${month}::${photo.location}`;
+    const entry = groups.get(key) ?? [];
+    entry.push(photo);
+    groups.set(key, entry);
+  }
+
+  return Array.from(groups.entries())
+    .map(([key, items]) => {
+      const [month, location] = key.split("::");
+      const dateRange = items
+        .map((item) => item.takenAtRaw ?? item.takenAt)
+        .sort()
+        .join(" – ");
+      return {
+        id: key,
+        month: month.replace(/\s+\d+$/, ""),
+        year: month.replace(/^.*\s/, ""),
+        location,
+        country: items[0]?.country ?? "Unknown",
+        photoCount: items.length,
+        note: `A visual record of ${location} from the archive.`,
+        coverImage: items[0]?.imageUrl ?? items[0]?.imageUrl,
+      };
+    })
+    .sort((a, b) => (a.id < b.id ? 1 : -1));
+}
+
+export async function getGearStats(): Promise<GearStat[]> {
+  const photos = await getGalleryPhotos();
+  const cameraCounts = new Map<string, number>();
+  const lensCounts = new Map<string, number>();
+  const collectionMap = new Map<string, Set<string>>();
+  const countryMap = new Map<string, Set<string>>();
+
+  for (const photo of photos) {
+    cameraCounts.set(photo.camera, (cameraCounts.get(photo.camera) ?? 0) + 1);
+    lensCounts.set(photo.lens, (lensCounts.get(photo.lens) ?? 0) + 1);
+
+    if (!collectionMap.has(photo.camera)) {
+      collectionMap.set(photo.camera, new Set());
+    }
+    collectionMap.get(photo.camera)?.add(photo.collection);
+
+    if (!countryMap.has(photo.camera)) {
+      countryMap.set(photo.camera, new Set());
+    }
+    countryMap.get(photo.camera)?.add(photo.country);
+  }
+
+  const total = photos.length || 1;
+  return toSortedEntries(cameraCounts).map(([camera, count]) => ({
+    label: camera,
+    count,
+    usagePct: Number(((count / total) * 100).toFixed(1)),
+    collections: collectionMap.get(camera)?.size ?? 0,
+    countries: countryMap.get(camera)?.size ?? 0,
+  }));
+}
+
+export async function getInsightData(): Promise<InsightData> {
+  const photos = await getGalleryPhotos();
+  const countryCounts = new Map<string, number>();
+  const cityCounts = new Map<string, number>();
+  const cameraCounts = new Map<string, number>();
+  const lensCounts = new Map<string, number>();
+  const yearCounts = new Map<string, number>();
+
+  for (const photo of photos) {
+    countryCounts.set(
+      photo.country,
+      (countryCounts.get(photo.country) ?? 0) + 1,
+    );
+    cityCounts.set(photo.location, (cityCounts.get(photo.location) ?? 0) + 1);
+    cameraCounts.set(photo.camera, (cameraCounts.get(photo.camera) ?? 0) + 1);
+    lensCounts.set(photo.lens, (lensCounts.get(photo.lens) ?? 0) + 1);
+
+    const year = photo.takenAtRaw
+      ? new Date(photo.takenAtRaw).getFullYear().toString()
+      : "Unknown";
+    yearCounts.set(year, (yearCounts.get(year) ?? 0) + 1);
+  }
+
+  return {
+    topCountries: toSortedEntries(countryCounts).slice(0, 8),
+    topCities: toSortedEntries(cityCounts).slice(0, 8),
+    topCameras: toSortedEntries(cameraCounts).slice(0, 8),
+    topLenses: toSortedEntries(lensCounts).slice(0, 8),
+    yearGrowth: Array.from(yearCounts.entries())
+      .map(([year, count]) => ({ year, count }))
+      .sort((a, b) => Number(a.year) - Number(b.year)),
+  };
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import type { GalleryPhoto } from "@/src/lib/gallery-data";
@@ -164,25 +165,48 @@ export function GalleryExperience({ photos }: Props) {
       </section>
 
       {selectedPhoto && (
-        <PhotoModal
-          photo={selectedPhoto}
-          isOpen={Boolean(selectedPhoto)}
-          hasPrevious={hasPrevious}
-          hasNext={hasNext}
-          onClose={() => setSelectedIndex(null)}
-          onPrevious={() => {
-            if (hasPrevious)
-              setSelectedIndex((current) =>
-                current === null ? null : current - 1,
-              );
-          }}
-          onNext={() => {
-            if (hasNext)
-              setSelectedIndex((current) =>
-                current === null ? null : current + 1,
-              );
-          }}
-        />
+        <>
+          <PhotoModal
+            photo={selectedPhoto}
+            isOpen={Boolean(selectedPhoto)}
+            hasPrevious={hasPrevious}
+            hasNext={hasNext}
+            onClose={() => setSelectedIndex(null)}
+            onPrevious={() => {
+              if (hasPrevious)
+                setSelectedIndex((current) =>
+                  current === null ? null : current - 1,
+                );
+            }}
+            onNext={() => {
+              if (hasNext)
+                setSelectedIndex((current) =>
+                  current === null ? null : current + 1,
+                );
+            }}
+          />
+
+          <div className="sr-only">
+            {hasPrevious && selectedIndex !== null ? (
+              <Image
+                src={filteredPhotos[selectedIndex - 1].imageUrl}
+                alt=""
+                width={16}
+                height={16}
+                priority
+              />
+            ) : null}
+            {hasNext && selectedIndex !== null ? (
+              <Image
+                src={filteredPhotos[selectedIndex + 1].imageUrl}
+                alt=""
+                width={16}
+                height={16}
+                priority
+              />
+            ) : null}
+          </div>
+        </>
       )}
     </div>
   );
