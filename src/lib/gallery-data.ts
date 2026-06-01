@@ -9,6 +9,7 @@ export type GalleryPhoto = {
   location: string;
   country: string;
   takenAt: string;
+  takenAtRaw?: string;
   collection: string;
   camera: string;
   lens: string;
@@ -21,6 +22,7 @@ export type GalleryPhoto = {
   colorProfile: string;
   dominantColor: string;
   copyright: string;
+  coordinates?: { lat: number; lng: number };
 };
 
 export type GalleryAlbum = {
@@ -30,6 +32,23 @@ export type GalleryAlbum = {
   coverPhoto: GalleryPhoto;
   photoCount: number;
 };
+
+const locationCoordinates: Record<string, { lat: number; lng: number }> = {
+  "Sanur, Bali": { lat: -8.7139, lng: 115.2711 },
+  "Mount Rinjani, Lombok": { lat: -8.4074, lng: 116.473 },
+  "Tana Toraja, South Sulawesi": { lat: -3.0189, lng: 119.7768 },
+  "Rammang-Rammang, Maros": { lat: -4.6731, lng: 119.52 },
+  "Wairinding Hill, Sumba": { lat: -9.8731, lng: 119.9163 },
+  "Labuan Bajo, Flores": { lat: -8.4689, lng: 119.8924 },
+  Singapore: { lat: 1.3521, lng: 103.8198 },
+  "Kintamani, Bali": { lat: -8.2255, lng: 115.3809 },
+};
+
+function getDefaultCoordinates(
+  location: string,
+): { lat: number; lng: number } | undefined {
+  return locationCoordinates[location];
+}
 
 export const fallbackGalleryPhotos: GalleryPhoto[] = [
   {
@@ -245,7 +264,11 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
     });
 
     if (photos.length === 0) {
-      return fallbackGalleryPhotos;
+      return fallbackGalleryPhotos.map((photo) => ({
+        ...photo,
+        takenAtRaw: photo.takenAtRaw ?? new Date(photo.takenAt).toISOString(),
+        coordinates: photo.coordinates ?? getDefaultCoordinates(photo.location),
+      }));
     }
 
     return photos.map((photo) => ({
@@ -256,6 +279,9 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       colorProfile: photo.colorProfile ?? "sRGB",
       copyright: photo.copyright ?? "(c) Yan Saputra",
       country: photo.country ?? "Not set",
+      coordinates: photo.location
+        ? getDefaultCoordinates(photo.location)
+        : undefined,
       dimensions:
         photo.width && photo.height
           ? `${photo.width} x ${photo.height}`
@@ -271,6 +297,7 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       shutterSpeed: photo.shutterSpeed ?? "Not set",
       story: photo.description ?? "Published travel frame.",
       takenAt: formatPhotoDate(photo.takenAt),
+      takenAtRaw: photo.takenAt?.toISOString() ?? undefined,
       title: photo.title,
     }));
   } catch (error) {
