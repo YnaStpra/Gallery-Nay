@@ -18,7 +18,11 @@ model Photo {
   altText            String?
   location           String?
   country            String?
+  latitude           Float?
+  longitude          Float?
   collection         String?
+  collectionId       String?    @map("collection_id")
+  collectionRelation Collection? @relation("CollectionPhotos", fields: [collectionId], references: [id])
   takenAt            DateTime?
   camera             String?
   lens               String?
@@ -36,4 +40,59 @@ model Photo {
   published          Boolean   @default(true)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+  downloadRequests   DownloadRequest[] @relation("PhotoDownloadRequests")
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  coverImage  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  photos      Photo[]  @relation("CollectionPhotos")
+}
+
+model Story {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  coverImage  String
+  content     Json
+  location    String?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Gear {
+  id           String   @id @default(cuid())
+  name         String
+  type         String
+  description  String?
+  image        String
+  purchaseDate DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model DownloadRequest {
+  id           String                 @id @default(cuid())
+  name         String
+  email        String
+  reason       String
+  usagePurpose String
+  photoId      String
+  photo        Photo                  @relation("PhotoDownloadRequests", fields: [photoId], references: [id])
+  status       DownloadRequestStatus  @default(PENDING)
+  requestedAt  DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+}
+
+enum DownloadRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
 }

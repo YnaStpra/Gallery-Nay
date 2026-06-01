@@ -1,0 +1,138 @@
+import { prisma } from "@/src/lib/prisma";
+import type { GalleryPhoto } from "@/src/lib/gallery-data";
+
+export type GalleryCollection = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  coverImage: string;
+  photoCount: number;
+  locationCount: number;
+  countryCount: number;
+  createdAt: string;
+  updatedAt: string;
+  photos: GalleryPhoto[];
+};
+
+function formatDate(date: Date | null) {
+  return date ? date.toISOString() : "";
+}
+
+function mapPhoto(photo: any): GalleryPhoto {
+  return {
+    alt: photo.altText ?? photo.title,
+    aperture: photo.aperture ?? "Not set",
+    camera: photo.camera ?? "Not set",
+    collection: photo.collection ?? "Published Archive",
+    collectionId: photo.collectionId ?? undefined,
+    colorProfile: photo.colorProfile ?? "sRGB",
+    copyright: photo.copyright ?? "(c) Yan Saputra",
+    country: photo.country ?? "Not set",
+    coordinates:
+      photo.latitude != null && photo.longitude != null
+        ? { lat: photo.latitude, lng: photo.longitude }
+        : undefined,
+    dimensions:
+      photo.width && photo.height
+        ? `${photo.width} x ${photo.height}`
+        : "Not set",
+    dominantColor: photo.dominantColor ?? "#64748b",
+    fileType: photo.fileType ?? "Display copy",
+    focalLength: photo.focalLength ?? "Not set",
+    id: photo.id,
+    imageUrl: photo.imageUrl,
+    iso: photo.iso ? String(photo.iso) : "Not set",
+    lens: photo.lens ?? "Not set",
+    location: photo.location ?? "Not set",
+    shutterSpeed: photo.shutterSpeed ?? "Not set",
+    story: photo.description ?? "Published travel frame.",
+    takenAt: photo.takenAt
+      ? new Intl.DateTimeFormat("en", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }).format(photo.takenAt)
+      : "Date not set",
+    takenAtRaw: photo.takenAt?.toISOString() ?? undefined,
+    slug: photo.slug ?? undefined,
+    title: photo.title,
+  };
+}
+
+export async function getCollections(): Promise<GalleryCollection[]> {
+  const collections = await prisma.collection.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      photos: {
+        where: { published: true },
+        orderBy: [{ takenAt: "desc" }, { createdAt: "desc" }],
+      },
+    },
+  });
+
+  return collections.map((collection) => {
+    const photos = collection.photos.map(mapPhoto);
+    const coverPhoto = photos[0];
+
+    return {
+      id: collection.id,
+      slug: collection.slug,
+      title: collection.title,
+      description:
+        collection.description ??
+        `A curated collection of ${coverPhoto?.location ?? "travel"} frames.`,
+      coverImage: collection.coverImage ?? coverPhoto.imageUrl,
+      photoCount: photos.length,
+      locationCount: new Set(
+        photos.map((photo) => photo.location).filter(Boolean),
+      ).size,
+      countryCount: new Set(
+        photos.map((photo) => photo.country).filter(Boolean),
+      ).size,
+      createdAt: formatDate(collection.createdAt),
+      updatedAt: formatDate(collection.updatedAt),
+      photos,
+    };
+  });
+}
+
+export async function getCollectionBySlug(
+  slug: string,
+): Promise<GalleryCollection | null> {
+  const collection = await prisma.collection.findUnique({
+    where: { slug },
+    include: {
+      photos: {
+        where: { published: true },
+        orderBy: [{ takenAt: "desc" }, { createdAt: "desc" }],
+      },
+    },
+  });
+
+  if (!collection) {
+    return null;
+  }
+
+  const photos = collection.photos.map(mapPhoto);
+  const coverPhoto = photos[0];
+
+  return {
+    id: collection.id,
+    slug: collection.slug,
+    title: collection.title,
+    description:
+      collection.description ??
+      `A curated collection of ${coverPhoto?.location ?? "travel"} frames.`,
+    coverImage: collection.coverImage ?? coverPhoto.imageUrl,
+    photoCount: photos.length,
+    locationCount: new Set(
+      photos.map((photo) => photo.location).filter(Boolean),
+    ).size,
+    countryCount: new Set(photos.map((photo) => photo.country).filter(Boolean))
+      .size,
+    createdAt: formatDate(collection.createdAt),
+    updatedAt: formatDate(collection.updatedAt),
+    photos,
+  };
+}

@@ -91,10 +91,13 @@ export function PhotoModal({
   }, [isOpen, photo.id]);
 
   const handleDoubleClick = () => {
-    setScale((current) => (current > 1 ? 1 : 2.3));
-    if (scale > 1) {
-      setPan({ x: 0, y: 0 });
-    }
+    setScale((current) => {
+      const next = current > 1 ? 1 : 2.3;
+      if (next === 1) {
+        setPan({ x: 0, y: 0 });
+      }
+      return next;
+    });
   };
 
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
@@ -206,8 +209,8 @@ export function PhotoModal({
               >
                 <motion.div
                   className="absolute inset-0"
-                  style={pan}
-                  animate={{ scale }}
+                  style={{ transformOrigin: "center center" }}
+                  animate={{ scale, x: pan.x, y: pan.y }}
                   transition={{ type: "spring", damping: 20, stiffness: 280 }}
                 >
                   <Image

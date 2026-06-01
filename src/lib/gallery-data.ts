@@ -9,10 +9,10 @@ export type GalleryPhoto = {
   location: string;
   country: string;
   takenAt: string;
-  takenAtRaw?: string;
   collection: string;
   camera: string;
   lens: string;
+  collectionId?: string;
   focalLength: string;
   aperture: string;
   shutterSpeed: string;
@@ -22,6 +22,8 @@ export type GalleryPhoto = {
   colorProfile: string;
   dominantColor: string;
   copyright: string;
+  takenAtRaw?: string;
+  slug?: string;
   coordinates?: { lat: number; lng: number };
 };
 
@@ -45,8 +47,12 @@ const locationCoordinates: Record<string, { lat: number; lng: number }> = {
 };
 
 function getDefaultCoordinates(
-  location: string,
+  location: string | null,
 ): { lat: number; lng: number } | undefined {
+  if (!location) {
+    return undefined;
+  }
+
   return locationCoordinates[location];
 }
 
@@ -279,9 +285,10 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       colorProfile: photo.colorProfile ?? "sRGB",
       copyright: photo.copyright ?? "(c) Yan Saputra",
       country: photo.country ?? "Not set",
-      coordinates: photo.location
-        ? getDefaultCoordinates(photo.location)
-        : undefined,
+      coordinates:
+        photo.latitude != null && photo.longitude != null
+          ? { lat: photo.latitude, lng: photo.longitude }
+          : getDefaultCoordinates(photo.location),
       dimensions:
         photo.width && photo.height
           ? `${photo.width} x ${photo.height}`
@@ -298,6 +305,8 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       story: photo.description ?? "Published travel frame.",
       takenAt: formatPhotoDate(photo.takenAt),
       takenAtRaw: photo.takenAt?.toISOString() ?? undefined,
+      collectionId: photo.collectionId ?? undefined,
+      slug: photo.slug ?? undefined,
       title: photo.title,
     }));
   } catch (error) {
