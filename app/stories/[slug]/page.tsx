@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { JourneyTracker } from "@/app/_components/JourneyTracker";
 import { getStoryBySlug, type StoryDetail } from "@/src/lib/story-data";
 import { getStories } from "@/src/lib/story-data";
 
@@ -52,7 +54,14 @@ function StoryBlock({ block }: { block: StoryDetail["content"][number] }) {
 
   return (
     <figure className="mt-10 overflow-hidden rounded-[32px] bg-zinc-900">
-      <img src={block.src} alt={block.alt} className="w-full object-cover" />
+      <Image
+        src={block.src}
+        alt={block.alt}
+        width={1600}
+        height={900}
+        className="w-full object-cover"
+        sizes="(max-width: 1024px) 100vw, 1024px"
+      />
       {block.caption ? (
         <figcaption className="bg-black/60 px-5 py-4 text-sm text-zinc-400">
           {block.caption}
@@ -76,15 +85,23 @@ export default async function StoryPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-[#050505] text-white">
+      <JourneyTracker
+        country={story.country}
+        location={story.location}
+        story={story.title}
+      />
       <section className="relative overflow-hidden border-b border-white/10 pb-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(8,145,178,0.14),_transparent_30%)]" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-8 lg:px-12">
           <div className="overflow-hidden rounded-[32px] border border-white/10 bg-zinc-950/90 shadow-2xl shadow-black/40">
             <div className="relative aspect-[16/9] w-full bg-zinc-900">
-              <img
+              <Image
                 src={story.coverImage}
                 alt={story.title}
-                className="h-full w-full object-cover"
+                fill
+                className="object-cover"
+                priority
+                sizes="(max-width: 1024px) 100vw, 1152px"
               />
             </div>
             <div className="space-y-4 px-6 py-8 sm:px-10 sm:py-10">

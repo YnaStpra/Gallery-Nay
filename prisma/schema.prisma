@@ -38,9 +38,17 @@ model Photo {
   copyright          String?
   isDownloadable     Boolean   @default(false)
   published          Boolean   @default(true)
+  viewCount          Int       @default(0)
+  favoriteCount      Int       @default(0)
+  requestCount       Int       @default(0)
+  isPrintReady       Boolean   @default(false)
+  printAvailableSizes Json?
+  printAspectRatios  Json?
+  tags               String[]  @default([])
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   downloadRequests   DownloadRequest[] @relation("PhotoDownloadRequests")
+  photoOfTheDay      PhotoOfTheDay?
 }
 
 model Collection {
@@ -86,11 +94,28 @@ model DownloadRequest {
   email        String
   reason       String
   usagePurpose String
+  message      String?
   photoId      String
-  photo        Photo                  @relation("PhotoDownloadRequests", fields: [photoId], references: [id])
+  photo        Photo                  @relation("PhotoDownloadRequests", fields: [photoId], references: [id], onDelete: Cascade)
+  requestType  DownloadRequestType    @default(ORIGINAL)
   status       DownloadRequestStatus  @default(PENDING)
   requestedAt  DateTime               @default(now())
   updatedAt    DateTime               @updatedAt
+}
+
+model PhotoOfTheDay {
+  id        String   @id @default(cuid())
+  photoId   String
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  selectedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+enum DownloadRequestType {
+  ORIGINAL
+  HIGH_RES
+  COMMERCIAL_LICENSE
+  EDITORIAL_USAGE
 }
 
 enum DownloadRequestStatus {

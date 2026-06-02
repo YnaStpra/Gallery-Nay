@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { getStories } from "@/src/lib/story-data";
 
@@ -39,10 +40,12 @@ export default async function StoriesPage() {
               className="group overflow-hidden rounded-[32px] border border-white/10 bg-zinc-950 shadow-2xl shadow-black/30 transition hover:-translate-y-1 hover:border-cyan-300/30"
             >
               <div className="relative aspect-[16/9] bg-zinc-900">
-                <img
+                <Image
                   src={story.coverImage}
                   alt={story.title}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  fill
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                  sizes="(max-width: 1280px) 100vw, 50vw"
                 />
               </div>
               <div className="p-8">

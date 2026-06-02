@@ -13,6 +13,9 @@ import {
   X,
 } from "lucide-react";
 import type { GalleryPhoto } from "@/src/lib/gallery-data";
+import { useJourney, useRecentlyViewed } from "@/src/hooks";
+import { DownloadRequestPanel } from "./DownloadRequestPanel";
+import { PhotoCollectorActions } from "./PhotoCollectorActions";
 import { getAspectRatio } from "./photo-utils";
 
 type Props = {
@@ -63,6 +66,8 @@ export function PhotoModal({
   onPrevious,
   onNext,
 }: Props) {
+  const { addToViewed } = useRecentlyViewed();
+  const { addCollection, addCountry, addLocation } = useJourney();
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isLoaded, setIsLoaded] = useState(false);
@@ -113,16 +118,28 @@ export function PhotoModal({
 
   useEffect(() => {
     if (!isOpen) {
-      setScale(1);
-      setPan({ x: 0, y: 0 });
-      setShowInfo(false);
-      setIsLoaded(false);
       return;
     }
 
-    setShowInfo(false);
-    setIsLoaded(false);
-  }, [isOpen, photo.id]);
+    addToViewed(photo.id);
+    addCountry(photo.country);
+    addLocation(photo.location);
+    addCollection(photo.collection);
+
+    fetch(`/api/photo/${photo.id}/view`, { method: "POST" }).catch((error) => {
+      console.error("Failed to track photo view", error);
+    });
+  }, [
+    addCollection,
+    addCountry,
+    addLocation,
+    addToViewed,
+    isOpen,
+    photo.collection,
+    photo.country,
+    photo.id,
+    photo.location,
+  ]);
 
   const handleDoubleClick = () => {
     setScale((current) => {
@@ -460,6 +477,17 @@ export function PhotoModal({
                         </div>
                       </div>
                     </div>
+
+                    <PhotoCollectorActions
+                      photoId={photo.id}
+                      slug={photo.slug}
+                      title={photo.title}
+                    />
+
+                    <DownloadRequestPanel
+                      photoId={photo.id}
+                      photoTitle={photo.title}
+                    />
                   </div>
                 </motion.aside>
               )}

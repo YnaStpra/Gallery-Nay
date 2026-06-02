@@ -19,7 +19,36 @@ function formatDate(date: Date | null) {
   return date ? date.toISOString() : "";
 }
 
-function mapPhoto(photo: any): GalleryPhoto {
+type CollectionPhotoRecord = {
+  altText: string | null;
+  aperture: string | null;
+  blurDataUrl?: string | null;
+  camera: string | null;
+  collection: string | null;
+  collectionId: string | null;
+  colorProfile: string | null;
+  copyright: string | null;
+  country: string | null;
+  description: string | null;
+  dominantColor: string | null;
+  fileType: string | null;
+  focalLength: string | null;
+  height: number | null;
+  id: string;
+  imageUrl: string;
+  iso: number | null;
+  latitude: number | null;
+  lens: string | null;
+  location: string | null;
+  longitude: number | null;
+  shutterSpeed: string | null;
+  slug: string | null;
+  takenAt: Date | null;
+  title: string;
+  width: number | null;
+};
+
+function mapPhoto(photo: CollectionPhotoRecord): GalleryPhoto {
   return {
     alt: photo.altText ?? photo.title,
     aperture: photo.aperture ?? "Not set",
@@ -38,6 +67,7 @@ function mapPhoto(photo: any): GalleryPhoto {
         ? `${photo.width} x ${photo.height}`
         : "Not set",
     dominantColor: photo.dominantColor ?? "#64748b",
+    blurDataUrl: photo.blurDataUrl ?? undefined,
     fileType: photo.fileType ?? "Display copy",
     focalLength: photo.focalLength ?? "Not set",
     id: photo.id,
@@ -82,7 +112,7 @@ export async function getCollections(): Promise<GalleryCollection[]> {
       description:
         collection.description ??
         `A curated collection of ${coverPhoto?.location ?? "travel"} frames.`,
-      coverImage: collection.coverImage ?? coverPhoto.imageUrl,
+      coverImage: collection.coverImage ?? coverPhoto?.imageUrl ?? "",
       photoCount: photos.length,
       locationCount: new Set(
         photos.map((photo) => photo.location).filter(Boolean),
@@ -124,7 +154,7 @@ export async function getCollectionBySlug(
     description:
       collection.description ??
       `A curated collection of ${coverPhoto?.location ?? "travel"} frames.`,
-    coverImage: collection.coverImage ?? coverPhoto.imageUrl,
+    coverImage: collection.coverImage ?? coverPhoto?.imageUrl ?? "",
     photoCount: photos.length,
     locationCount: new Set(
       photos.map((photo) => photo.location).filter(Boolean),

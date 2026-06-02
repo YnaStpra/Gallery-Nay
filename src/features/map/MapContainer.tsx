@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo } from "react";
 import {
   MapContainer as LeafletMapContainer,
@@ -17,6 +18,18 @@ import "react-leaflet-cluster/dist/assets/MarkerCluster.Default.css";
 
 const MAP_CENTER: [number, number] = [0, 100];
 const MAP_ZOOM = 2;
+
+type ClusterMarker = {
+  options: {
+    photoId?: string;
+  };
+};
+
+type ClusterEvent = {
+  layer: {
+    getAllChildMarkers?: () => ClusterMarker[];
+  };
+};
 
 type Props = {
   photos: GalleryPhoto[];
@@ -66,7 +79,11 @@ export function MapContainer({
       return;
     }
 
-    delete (L.Icon.Default as any).prototype._getIconUrl;
+    delete (
+      L.Icon.Default as unknown as {
+        prototype: { _getIconUrl?: unknown };
+      }
+    ).prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconRetinaUrl:
         "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -97,11 +114,11 @@ export function MapContainer({
         spiderfyOnMaxZoom={true}
         showCoverageOnHover={false}
         disableClusteringAtZoom={12}
-        onClick={(event: any) => {
+        onClick={(event: ClusterEvent) => {
           const cluster = event.layer;
           const markers = cluster.getAllChildMarkers?.() ?? [];
           const photoIds = markers
-            .map((marker: any) => marker.options.photoId)
+            .map((marker) => marker.options.photoId)
             .filter(Boolean);
           if (photoIds.length === 1) {
             onSelect(photoIds[0]);
@@ -109,11 +126,11 @@ export function MapContainer({
             onSelectCluster(photoIds);
           }
         }}
-        onMouseOver={(event: any) => {
+        onMouseOver={(event: ClusterEvent) => {
           const cluster = event.layer;
           const markers = cluster.getAllChildMarkers?.() ?? [];
           const photoIds = markers
-            .map((marker: any) => marker.options.photoId)
+            .map((marker) => marker.options.photoId)
             .filter(Boolean);
           onClusterFocus(photoIds);
         }}
@@ -128,7 +145,11 @@ export function MapContainer({
             }}
             title={photo.title}
             alt={photo.alt}
-            opacity={0.8}
+            opacity={
+              selectedPhotoId === null || selectedPhotoId === photo.id
+                ? 0.95
+                : 0.48
+            }
             {...{ photoId: photo.id }}
           >
             <Popup>
@@ -137,9 +158,11 @@ export function MapContainer({
                   {photo.title}
                 </p>
                 <p className="text-xs text-slate-600">{photo.location}</p>
-                <img
+                <Image
                   src={photo.imageUrl}
                   alt={photo.alt}
+                  width={240}
+                  height={112}
                   className="mt-3 h-28 w-full rounded-2xl object-cover"
                 />
               </div>

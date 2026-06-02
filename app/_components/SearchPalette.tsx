@@ -19,17 +19,28 @@ type SearchPaletteProps = {
 
 export function SearchPalette({ open, onClose }: SearchPaletteProps) {
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<SearchItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<SearchItem[] | null>(null);
 
   useEffect(() => {
     if (!open) return;
-    setLoading(true);
+    let ignore = false;
+
     fetch("/api/search")
       .then((res) => res.json())
-      .then((data) => setItems(data.items ?? []))
-      .catch(() => setItems([]))
-      .finally(() => setLoading(false));
+      .then((data: { items?: SearchItem[] }) => {
+        if (!ignore) {
+          setItems(data.items ?? []);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setItems([]);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [open]);
 
   useEffect(() => {
@@ -45,8 +56,9 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
 
   const filteredItems = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    if (!normalized) return items;
-    return items.filter((item) =>
+    const searchableItems = items ?? [];
+    if (!normalized) return searchableItems;
+    return searchableItems.filter((item) =>
       [item.title, item.subtitle, item.type].some((value) =>
         value.toLowerCase().includes(normalized),
       ),
@@ -97,7 +109,7 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
 
         <div className="overflow-hidden rounded-[32px] border border-white/10 bg-[#050505]/95">
           <div className="max-h-[420px] overflow-y-auto">
-            {loading ? (
+            {items === null ? (
               <div className="p-6 text-center text-zinc-400">
                 Loading search index…
               </div>

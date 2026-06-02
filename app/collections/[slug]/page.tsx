@@ -2,10 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { GalleryExperience } from "@/app/_components/GalleryExperience";
-import {
-  getGalleryPhotosByCollectionSlug,
-  type GalleryPhoto,
-} from "@/src/lib/gallery-data";
+import { JourneyTracker } from "@/app/_components/JourneyTracker";
+import { getGalleryPhotosByCollectionSlug } from "@/src/lib/gallery-data";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +49,11 @@ export default async function CollectionPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-[#050505] text-zinc-50">
+      <JourneyTracker
+        collection={collectionName}
+        country={photos[0]?.country}
+        location={photos[0]?.location}
+      />
       <section className="border-b border-white/10 px-4 py-10 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-6xl">
           <p className="text-xs font-medium uppercase tracking-[0.24em] text-cyan-200">

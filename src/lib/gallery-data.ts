@@ -437,10 +437,6 @@ export async function getJournalEntries(): Promise<JournalEntry[]> {
   return Array.from(groups.entries())
     .map(([key, items]) => {
       const [month, location] = key.split("::");
-      const dateRange = items
-        .map((item) => item.takenAtRaw ?? item.takenAt)
-        .sort()
-        .join(" – ");
       return {
         id: key,
         month: month.replace(/\s+\d+$/, ""),

@@ -124,15 +124,34 @@ function parseContent(value: unknown): StoryContentBlock[] {
   return fallbackContent;
 }
 
-function buildStorySummary(story: any): StorySummary {
+type StoryRecord = {
+  content: unknown;
+  coverImage: string;
+  country: string | null;
+  createdAt: Date;
+  excerpt: string | null;
+  id: string;
+  location: string | null;
+  published: boolean;
+  publishedAt: Date | null;
+  slug: string;
+  title: string;
+};
+
+function buildStorySummary(story: StoryRecord): StorySummary {
   const content = parseContent(story.content);
+  const firstParagraph = content.find(
+    (block): block is Extract<StoryContentBlock, { type: "paragraph" }> =>
+      block.type === "paragraph",
+  );
+
   return {
     id: story.id,
     slug: story.slug,
     title: story.title,
     excerpt:
       story.excerpt ||
-      content.find((block) => block.type === "paragraph")?.text.slice(0, 120) ||
+      firstParagraph?.text.slice(0, 120) ||
       "A travel story from the archive.",
     coverImage: story.coverImage,
     location: story.location || "Unknown",
