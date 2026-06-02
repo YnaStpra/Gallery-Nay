@@ -5,10 +5,7 @@ type RouteParams = {
   params: Promise<{ id: string }>;
 };
 
-export async function POST(
-  req: NextRequest,
-  { params }: RouteParams,
-) {
+export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const { action } = (await req.json()) as {
@@ -16,10 +13,7 @@ export async function POST(
     };
 
     if (!["increment", "decrement"].includes(action)) {
-      return NextResponse.json(
-        { error: "Invalid action" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
     const photo = await prisma.photo.update({
@@ -55,10 +49,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     });
 
     if (!photo) {
-      return NextResponse.json(
-        { error: "Photo not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Photo not found" }, { status: 404 });
     }
 
     return NextResponse.json({ favoriteCount: photo.favoriteCount });

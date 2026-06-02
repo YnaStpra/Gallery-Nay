@@ -31,7 +31,9 @@ export default function MyCollectionsPage() {
   );
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newName, setNewName] = useState("");
-  const [editingCollection, setEditingCollection] = useState<string | null>(null);
+  const [editingCollection, setEditingCollection] = useState<string | null>(
+    null,
+  );
   const [editName, setEditName] = useState("");
 
   useEffect(() => {
@@ -160,9 +162,7 @@ export default function MyCollectionsPage() {
                     <div className="flex items-center justify-between">
                       <span className="font-medium truncate">{name}</span>
                       <span className="text-xs text-zinc-500">
-                        {
-                          getCollectionPhotoIds(name).length
-                        }
+                        {getCollectionPhotoIds(name).length}
                       </span>
                     </div>
                   </button>
@@ -196,7 +196,8 @@ export default function MyCollectionsPage() {
                       </h2>
                     )}
                     <p className="mt-1 text-sm text-zinc-500">
-                      {currentPhotos.length} photo{currentPhotos.length === 1 ? "" : "s"}
+                      {currentPhotos.length} photo
+                      {currentPhotos.length === 1 ? "" : "s"}
                     </p>
                   </div>
 
@@ -231,11 +232,12 @@ export default function MyCollectionsPage() {
                         </button>
                         <button
                           onClick={() => {
-                            const link = shareCollectionLink(selectedCollection);
+                            const link =
+                              shareCollectionLink(selectedCollection);
                             navigator.clipboard
                               .writeText(link)
                               .then(() =>
-                                alert("Collection link copied to clipboard!")
+                                alert("Collection link copied to clipboard!"),
                               );
                           }}
                           className="inline-flex items-center gap-2 rounded border border-white/10 px-3 py-2 text-sm hover:bg-white/5"
@@ -274,12 +276,16 @@ export default function MyCollectionsPage() {
               </div>
             ) : (
               <div className="rounded-lg border border-dashed border-white/10 p-12 text-center">
-                <FolderPlus className="mx-auto size-12 text-zinc-700" aria-hidden />
+                <FolderPlus
+                  className="mx-auto size-12 text-zinc-700"
+                  aria-hidden
+                />
                 <h3 className="mt-4 text-lg font-semibold text-zinc-300">
                   No collection selected
                 </h3>
                 <p className="mt-2 text-sm text-zinc-500">
-                  Create a collection or select one from the list to get started.
+                  Create a collection or select one from the list to get
+                  started.
                 </p>
               </div>
             )}

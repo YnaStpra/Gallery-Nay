@@ -139,8 +139,8 @@ export default function ComparePage() {
             Photo comparison
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-zinc-300 sm:text-lg">
-            Select two photos to compare their metadata and camera settings
-            side by side.
+            Select two photos to compare their metadata and camera settings side
+            by side.
           </p>
         </div>
       </section>

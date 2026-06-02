@@ -39,10 +39,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     });
 
     if (!photo) {
-      return NextResponse.json(
-        { error: "Photo not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Photo not found" }, { status: 404 });
     }
 
     return NextResponse.json({ viewCount: photo.viewCount });

@@ -10,7 +10,11 @@ type Props = {
   compact?: boolean;
 };
 
-export function FavoriteButton({ photoId, showCount = false, compact = false }: Props) {
+export function FavoriteButton({
+  photoId,
+  showCount = false,
+  compact = false,
+}: Props) {
   const { isFavorited, toggleFavorite, isLoaded } = useFavorites();
   const [count, setCount] = useState(0);
   const isFav = isFavorited(photoId);
@@ -48,7 +52,13 @@ export function FavoriteButton({ photoId, showCount = false, compact = false }: 
 
   if (!isLoaded) {
     return (
-      <div className={compact ? "h-6 w-6 bg-white/10 rounded animate-pulse" : "h-8 w-8 bg-white/10 rounded animate-pulse"} />
+      <div
+        className={
+          compact
+            ? "h-6 w-6 bg-white/10 rounded animate-pulse"
+            : "h-8 w-8 bg-white/10 rounded animate-pulse"
+        }
+      />
     );
   }
 
