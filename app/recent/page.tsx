@@ -19,6 +19,10 @@ type RecentPhoto = Photo & {
   viewedLabel: string;
 };
 
+function getPhotoHref(photo: Photo) {
+  return photo.slug ? `/albums/${photo.slug}` : `/albums/${photo.id}`;
+}
+
 function formatViewedAt(timestamp: number, now: number) {
   const diff = now - timestamp;
   const minutes = Math.floor(diff / 60000);
@@ -132,7 +136,7 @@ export default function RecentPage() {
               {photos.map((photo, idx) => (
                 <Link
                   key={`${photo.id}-${idx}`}
-                  href={`/albums/${photo.slug}`}
+                  href={getPhotoHref(photo)}
                   className="group grid gap-0 overflow-hidden rounded-lg border border-white/10 bg-zinc-950/50 transition hover:border-cyan-300/30 md:grid-cols-[300px_1fr]"
                 >
                   <div className="relative aspect-square overflow-hidden bg-zinc-900">

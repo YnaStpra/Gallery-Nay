@@ -105,7 +105,7 @@ model DownloadRequest {
 
 model PhotoOfTheDay {
   id        String   @id @default(cuid())
-  photoId   String
+  photoId   String   @unique
   photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
   selectedAt DateTime @default(now())
   createdAt DateTime @default(now())

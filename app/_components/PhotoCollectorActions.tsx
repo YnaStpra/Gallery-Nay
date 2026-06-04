@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Facebook, MessageCircle, Send, Share2 } from "lucide-react";
+import { Copy, Globe, MessageCircle, Send, Share2 } from "lucide-react";
 import { useState } from "react";
 
 import { useMyCollections } from "@/src/hooks";
@@ -181,7 +181,7 @@ export function PhotoCollectorActions({
           rel="noreferrer"
           target="_blank"
         >
-          <Facebook className="size-4" aria-hidden />
+          <Globe className="size-4" aria-hidden />
           Facebook
         </a>
         <a

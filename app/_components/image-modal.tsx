@@ -1,17 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import {
-  X,
-  MapPin,
-  Camera,
-  Aperture,
-  Ruler,
-  ScanSearch,
-  Palette,
-} from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect } from "react";
+
 import type { GalleryPhoto } from "@/src/lib/gallery-data";
+import { getPreviewImageSize } from "./photo-utils";
 
 type Props = {
   photo: GalleryPhoto;
@@ -21,12 +15,13 @@ type Props = {
 
 function MetadataItem({ label, value }: { label: string; value: string }) {
   if (!value) return null;
+
   return (
-    <div className="flex min-w-0 gap-3">
-      <dt className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-500">
+    <div className="grid gap-1">
+      <dt className="text-[11px] uppercase tracking-[0.14em] text-zinc-500">
         {label}
       </dt>
-      <dd className="mt-0.5 text-sm text-zinc-100">{value}</dd>
+      <dd className="text-sm leading-6 text-zinc-100">{value}</dd>
     </div>
   );
 }
@@ -34,63 +29,70 @@ function MetadataItem({ label, value }: { label: string; value: string }) {
 export function ImageModal({ photo, isOpen, onClose }: Props) {
   useEffect(() => {
     if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
     };
+
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
+
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
+
+  const imageSize = getPreviewImageSize(photo);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-black/90 p-3 backdrop-blur-sm sm:p-4">
       <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/70"
         onClick={onClose}
         aria-hidden
       />
 
-      <div className="relative z-10 w-full max-w-[1100px] max-h-[90vh] overflow-hidden rounded bg-black/90 border border-white/10 flex flex-col lg:flex-row">
-        {/* Left: image */}
-        <div className="lg:flex-1 flex items-center justify-center bg-zinc-950 p-4">
-          <div className="relative w-full max-h-[82vh]">
+      <div className="relative z-10 flex h-[calc(100dvh-1.5rem)] w-full overflow-hidden rounded-[28px] border border-white/10 bg-black lg:h-[calc(100dvh-2rem)] lg:flex-row">
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-black p-4 sm:p-6">
+          <div className="flex h-full w-full items-center justify-center">
             <Image
               src={photo.imageUrl}
               alt={photo.alt}
-              width={1600}
-              height={1200}
-              className="w-full h-auto object-contain"
-              sizes="(max-width: 1024px) 100vw, 60vw"
+              width={imageSize.width}
+              height={imageSize.height}
               priority
+              sizes="(max-width: 1024px) 100vw, calc(100vw - 380px)"
+              className="h-auto max-h-[calc(100dvh-4rem)] w-auto max-w-full object-contain"
+              style={{ imageOrientation: "from-image" }}
             />
-            <button
-              onClick={onClose}
-              aria-label="Close image viewer"
-              className="absolute right-3 top-3 rounded bg-white/10 p-2 text-white hover:bg-white/20"
-            >
-              <X className="size-5" />
-            </button>
           </div>
+
+          <button
+            onClick={onClose}
+            aria-label="Close image viewer"
+            className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white transition hover:bg-white/70 hover:text-black"
+          >
+            <X className="size-5" />
+          </button>
         </div>
 
-        {/* Right: details */}
-        <div className="w-full lg:w-[380px] overflow-y-auto p-6 bg-zinc-900">
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-amber-200">
+        <aside className="w-full shrink-0 overflow-y-auto border-t border-white/10 bg-zinc-950 p-5 lg:w-[380px] lg:border-l lg:border-t-0 lg:p-6">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-amber-200">
             {photo.collection}
           </p>
           <h3 className="mt-2 text-2xl font-semibold text-white">
             {photo.title}
           </h3>
-          <p className="mt-4 text-sm leading-relaxed text-zinc-300">
-            {photo.story}
-          </p>
+          <p className="mt-4 text-sm leading-7 text-zinc-300">{photo.story}</p>
 
-          <div className="mt-6 space-y-3 border-t border-white/6 pt-4 text-sm text-zinc-200">
+          <dl className="mt-6 grid gap-4 border-t border-white/10 pt-5 text-sm text-zinc-200">
             <MetadataItem
               label="Location"
               value={`${photo.location}, ${photo.country}`}
@@ -105,9 +107,9 @@ export function ImageModal({ photo, isOpen, onClose }: Props) {
             />
             <MetadataItem label="Dimensions" value={photo.dimensions} />
             <MetadataItem label="File Type" value={photo.fileType} />
-          </div>
+          </dl>
 
-          <div className="mt-6 border-t border-white/6 pt-4 text-xs text-zinc-400">
+          <div className="mt-6 border-t border-white/10 pt-4 text-xs text-zinc-400">
             <div className="flex items-center gap-2">
               <span
                 className="inline-block h-3 w-6 rounded"
@@ -116,7 +118,7 @@ export function ImageModal({ photo, isOpen, onClose }: Props) {
               <span>Dominant: {photo.dominantColor}</span>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );

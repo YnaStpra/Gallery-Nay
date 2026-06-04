@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { FolderPlus, Share2, Trash2 } from "lucide-react";
 import { useMyCollections } from "@/src/hooks";
-import { MasonryGallery } from "@/app/_components/MasonryGallery";
 
 type Photo = {
   id: string;
@@ -13,6 +14,10 @@ type Photo = {
   location: string | null;
   country: string | null;
 };
+
+function getPhotoHref(photo: Photo) {
+  return photo.slug ? `/albums/${photo.slug}` : `/albums/${photo.id}`;
+}
 
 export default function MyCollectionsPage() {
   const {
@@ -271,7 +276,33 @@ export default function MyCollectionsPage() {
                     </p>
                   </div>
                 ) : (
-                  <MasonryGallery photos={currentPhotos} />
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {currentPhotos.map((photo) => (
+                      <Link
+                        key={photo.id}
+                        href={getPhotoHref(photo)}
+                        className="group overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/60 transition hover:border-cyan-300/30"
+                      >
+                        <div className="relative aspect-[4/3] bg-zinc-900">
+                          <Image
+                            src={photo.imageUrl}
+                            alt={photo.title}
+                            fill
+                            className="object-cover transition group-hover:scale-105"
+                            sizes="(max-width: 1280px) 100vw, 33vw"
+                          />
+                        </div>
+                        <div className="p-5">
+                          <p className="text-xs uppercase tracking-[0.18em] text-cyan-300">
+                            {photo.location}, {photo.country}
+                          </p>
+                          <h3 className="mt-2 text-xl font-semibold text-white group-hover:text-cyan-300">
+                            {photo.title}
+                          </h3>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 )}
               </div>
             ) : (

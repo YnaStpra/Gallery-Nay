@@ -31,6 +31,10 @@ type ClusterEvent = {
   };
 };
 
+function isString(value: string | undefined): value is string {
+  return typeof value === "string";
+}
+
 type Props = {
   photos: GalleryPhoto[];
   selectedPhotoId: string | null;
@@ -119,7 +123,7 @@ export function MapContainer({
           const markers = cluster.getAllChildMarkers?.() ?? [];
           const photoIds = markers
             .map((marker) => marker.options.photoId)
-            .filter(Boolean);
+            .filter(isString);
           if (photoIds.length === 1) {
             onSelect(photoIds[0]);
           } else if (photoIds.length > 1) {
@@ -131,7 +135,7 @@ export function MapContainer({
           const markers = cluster.getAllChildMarkers?.() ?? [];
           const photoIds = markers
             .map((marker) => marker.options.photoId)
-            .filter(Boolean);
+            .filter(isString);
           onClusterFocus(photoIds);
         }}
       >

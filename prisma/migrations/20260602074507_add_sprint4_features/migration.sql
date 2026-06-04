@@ -97,6 +97,9 @@ CREATE UNIQUE INDEX "Story_slug_key" ON "Story"("slug");
 -- AddForeignKey
 ALTER TABLE "Photo" ADD CONSTRAINT "Photo_collection_id_fkey" FOREIGN KEY ("collection_id") REFERENCES "Collection"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
+-- CreateIndex
+CREATE UNIQUE INDEX "PhotoOfTheDay_photoId_key" ON "PhotoOfTheDay"("photoId");
+
 -- AddForeignKey
 ALTER TABLE "DownloadRequest" ADD CONSTRAINT "DownloadRequest_photoId_fkey" FOREIGN KEY ("photoId") REFERENCES "Photo"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
