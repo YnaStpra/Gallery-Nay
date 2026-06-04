@@ -4,18 +4,12 @@ import Image from "next/image";
 import type { PointerEvent } from "react";
 import { useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
-import {
-  Aperture,
-  Camera,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  X,
-} from "lucide-react";
+import { Aperture, Camera, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 
 import { useJourney, useRecentlyViewed } from "@/src/hooks";
 import type { GalleryPhoto } from "@/src/lib/gallery-data";
 import { DownloadRequestPanel } from "./DownloadRequestPanel";
+import { ModalCloseButton } from "./ModalCloseButton";
 import { PhotoCollectorActions } from "./PhotoCollectorActions";
 import { getPreviewImageSize } from "./photo-utils";
 
@@ -157,6 +151,14 @@ export function PhotoModal({
         aria-hidden="true"
       />
 
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-4 sm:p-6">
+        <ModalCloseButton
+          onClick={onClose}
+          ariaLabel="Close photo modal"
+          className="pointer-events-auto"
+        />
+      </div>
+
       <div className="relative z-10 flex h-[calc(100dvh-1.5rem)] w-full overflow-hidden rounded-[28px] border border-white/10 bg-black lg:h-[calc(100dvh-2rem)] lg:flex-row">
         <section className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-black p-4 sm:p-6">
           <div
@@ -176,14 +178,6 @@ export function PhotoModal({
             />
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close photo modal"
-            className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white transition hover:bg-white/20"
-          >
-            <X className="size-5" />
-          </button>
 
           <div className="absolute inset-y-0 left-4 hidden items-center lg:flex">
             <button

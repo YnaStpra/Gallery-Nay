@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { X } from "lucide-react";
 import { useEffect } from "react";
 
 import type { GalleryPhoto } from "@/src/lib/gallery-data";
+import { ModalCloseButton } from "./ModalCloseButton";
 import { getPreviewImageSize } from "./photo-utils";
 
 type Props = {
@@ -59,6 +59,14 @@ export function ImageModal({ photo, isOpen, onClose }: Props) {
         aria-hidden
       />
 
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-4 sm:p-6">
+        <ModalCloseButton
+          onClick={onClose}
+          ariaLabel="Close image viewer"
+          className="pointer-events-auto"
+        />
+      </div>
+
       <div className="relative z-10 flex h-[calc(100dvh-1.5rem)] w-full overflow-hidden rounded-[28px] border border-white/10 bg-black lg:h-[calc(100dvh-2rem)] lg:flex-row">
         <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-black p-4 sm:p-6">
           <div className="flex h-full w-full items-center justify-center">
@@ -74,13 +82,6 @@ export function ImageModal({ photo, isOpen, onClose }: Props) {
             />
           </div>
 
-          <button
-            onClick={onClose}
-            aria-label="Close image viewer"
-            className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white transition hover:bg-white/70 hover:text-black"
-          >
-            <X className="size-5" />
-          </button>
         </div>
 
         <aside className="w-full shrink-0 overflow-y-auto border-t border-white/10 bg-zinc-950 p-5 lg:w-[380px] lg:border-l lg:border-t-0 lg:p-6">
