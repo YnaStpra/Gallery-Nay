@@ -10,13 +10,20 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function MapPage() {
+type PageProps = {
+  searchParams?: Promise<{
+    photo?: string;
+  }>;
+};
+
+export default async function MapPage({ searchParams }: PageProps) {
   const photos = await getGalleryPhotos();
+  const params = (await searchParams) ?? {};
 
   return (
     <main className="min-h-screen bg-[#050505] text-white">
       <div className="mx-auto flex min-h-screen max-w-[1800px] flex-col lg:flex-row">
-        <MapExplorer photos={photos} />
+        <MapExplorer photos={photos} initialPhotoId={params.photo ?? null} />
       </div>
     </main>
   );

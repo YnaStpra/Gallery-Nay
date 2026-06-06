@@ -16,10 +16,13 @@ const MapContainer = dynamic(
 
 type Props = {
   photos: GalleryPhoto[];
+  initialPhotoId?: string | null;
 };
 
-export function MapExplorer({ photos }: Props) {
-  const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
+export function MapExplorer({ photos, initialPhotoId }: Props) {
+  const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(
+    initialPhotoId ?? null,
+  );
   const [selectedClusterPhotoIds, setSelectedClusterPhotoIds] = useState<
     string[] | null
   >(null);

@@ -21,6 +21,8 @@ export type GalleryPhoto = {
   fileType: string;
   colorProfile: string;
   dominantColor: string;
+  width?: number;
+  height?: number;
   blurDataUrl?: string;
   copyright: string;
   takenAtRaw?: string;

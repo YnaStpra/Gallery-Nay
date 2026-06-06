@@ -12,6 +12,7 @@ import { DownloadRequestPanel } from "./DownloadRequestPanel";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { PhotoCollectorActions } from "./PhotoCollectorActions";
 import { getPreviewImageSize } from "./photo-utils";
+import { NearbyPhotos } from "@/components/NearbyPhotos";
 
 type Props = {
   photo: GalleryPhoto;
@@ -282,6 +283,7 @@ export function PhotoModal({
               photoId={photo.id}
               photoTitle={photo.title}
             />
+            <NearbyPhotos photoId={photo.id} />
           </div>
         </aside>
       </div>
