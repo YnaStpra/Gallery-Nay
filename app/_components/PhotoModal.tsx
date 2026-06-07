@@ -11,6 +11,7 @@ import type { GalleryPhoto } from "@/src/lib/gallery-data";
 import { DownloadRequestPanel } from "./DownloadRequestPanel";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { PhotoCollectorActions } from "./PhotoCollectorActions";
+import { PhotoPalette } from "./PhotoPalette";
 import { getPreviewImageSize } from "./photo-utils";
 import { NearbyPhotos } from "@/components/NearbyPhotos";
 
@@ -283,6 +284,7 @@ export function PhotoModal({
               photoId={photo.id}
               photoTitle={photo.title}
             />
+            <PhotoPalette imageUrl={photo.imageUrl} />
             <NearbyPhotos photoId={photo.id} />
           </div>
         </aside>
