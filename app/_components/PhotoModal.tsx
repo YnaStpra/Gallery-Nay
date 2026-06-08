@@ -87,9 +87,15 @@ function MetadataPanel({
       {photo.camera ? (
         <DetailRow label="Camera" value={photo.camera} accent={accent} />
       ) : null}
-      {photo.lens ? <DetailRow label="Lens" value={photo.lens} accent={accent} /> : null}
+      {photo.lens ? (
+        <DetailRow label="Lens" value={photo.lens} accent={accent} />
+      ) : null}
       {photo.focalLength ? (
-        <DetailRow label="Focal length" value={photo.focalLength} accent={accent} />
+        <DetailRow
+          label="Focal length"
+          value={photo.focalLength}
+          accent={accent}
+        />
       ) : null}
       {photo.aperture ? (
         <DetailRow label="Aperture" value={photo.aperture} accent={accent} />
@@ -101,7 +107,9 @@ function MetadataPanel({
           accent={accent}
         />
       ) : null}
-      {photo.iso ? <DetailRow label="ISO" value={photo.iso} accent={accent} /> : null}
+      {photo.iso ? (
+        <DetailRow label="ISO" value={photo.iso} accent={accent} />
+      ) : null}
       {photo.colorProfile ? (
         <DetailRow
           label="Color profile"
@@ -247,7 +255,6 @@ export function PhotoModal({
             />
           </div>
 
-
           <div className="absolute inset-y-0 left-4 hidden items-center lg:flex">
             <button
               type="button"
@@ -272,7 +279,7 @@ export function PhotoModal({
             </button>
           </div>
 
-          <div className="absolute inset-x-4 bottom-4 flex items-center justify-between gap-3 md:hidden">
+          <div className="absolute bottom-4 right-4 md:hidden">
             <button
               type="button"
               onClick={() => setShowMetadata(true)}
@@ -333,10 +340,7 @@ export function PhotoModal({
               slug={photo.slug}
               title={photo.title}
             />
-            <DownloadRequestPanel
-              photoId={photo.id}
-              photoTitle={photo.title}
-            />
+            <DownloadRequestPanel photoId={photo.id} photoTitle={photo.title} />
             <PhotoPalette imageUrl={photo.imageUrl} />
             <NearbyPhotos photoId={photo.id} />
           </div>
@@ -369,9 +373,7 @@ export function PhotoModal({
                 </button>
               </div>
               <div className="max-h-[44dvh] overflow-y-auto pr-1">
-                <p className="text-sm leading-7 text-zinc-300">
-                  {photo.story}
-                </p>
+                <p className="text-sm leading-7 text-zinc-300">{photo.story}</p>
                 <div className="mt-4">
                   <MetadataPanel
                     accent={accent}
