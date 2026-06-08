@@ -77,10 +77,6 @@ export function PhotoUploadForm({
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [metadataMessage, setMetadataMessage] = useState("");
-  const [popup, setPopup] = useState<{
-    kind: "loading" | "success" | "error";
-    message: string;
-  } | null>(null);
   const [isTitleEdited, setIsTitleEdited] = useState(false);
   const [isSlugEdited, setIsSlugEdited] = useState(false);
   const [isDescriptionEdited, setIsDescriptionEdited] = useState(false);
@@ -100,47 +96,6 @@ export function PhotoUploadForm({
     setIsLocationEdited(false);
     setIsCountryEdited(false);
   };
-
-  useEffect(() => {
-    if (pending) {
-      setPopup({
-        kind: "loading",
-        message: "Upload sedang di proses",
-      });
-      return;
-    }
-
-    if (state.status === "success") {
-      setPopup({
-        kind: "success",
-        message: "Upload berhasil",
-      });
-      return;
-    }
-
-    if (state.status === "error" && state.message) {
-      setPopup({
-        kind: "error",
-        message: "Upload gagal",
-      });
-    }
-  }, [pending, state.message, state.status]);
-
-  useEffect(() => {
-    if (!popup) {
-      return undefined;
-    }
-
-    if (popup.kind === "loading") {
-      return undefined;
-    }
-
-    const timer = window.setTimeout(() => {
-      setPopup(null);
-    }, 2200);
-
-    return () => window.clearTimeout(timer);
-  }, [popup]);
 
   useEffect(() => {
     if (state.status === "success") {
@@ -171,6 +126,24 @@ export function PhotoUploadForm({
     if (name === "location" && markEdited) setIsLocationEdited(true);
     if (name === "country" && markEdited) setIsCountryEdited(true);
   };
+
+  const popup =
+    pending
+      ? {
+          kind: "loading" as const,
+          message: state.message || "Upload sedang di proses",
+        }
+      : state.status === "success"
+        ? {
+            kind: "success" as const,
+            message: state.message || "Upload berhasil",
+          }
+        : state.status === "error"
+          ? {
+              kind: "error" as const,
+              message: state.message || "Upload gagal",
+            }
+          : null;
 
   const applyMetadata = async (file: File) => {
     try {
