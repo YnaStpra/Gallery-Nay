@@ -8,6 +8,7 @@ import {
   isCloudinaryConfigured,
   uploadPhotoToCloudinary,
 } from "@/src/lib/cloudinary";
+import { slugify } from "@/src/lib/photo-auto-fill";
 import { prisma } from "@/src/lib/prisma";
 
 export type AdminActionState = {
@@ -55,16 +56,6 @@ function getNullableDate(formData: FormData, name: string) {
   return getOptionalDate(formData, name) ?? null;
 }
 
-function slugify(value: string) {
-  const slug = value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return `${slug || "photo"}-${Date.now()}`;
-}
-
 function fail(message: string): AdminActionState {
   return {
     message,
@@ -105,6 +96,7 @@ export async function uploadPhoto(
   }
 
   const title = getText(formData, "title");
+  const slugInput = getOptionalText(formData, "slug");
   const image = formData.get("image");
 
   if (!title) {
@@ -156,7 +148,7 @@ export async function uploadPhoto(
         location,
         published: formData.get("published") === "on",
         shutterSpeed: getOptionalText(formData, "shutterSpeed"),
-        slug: slugify(title),
+        slug: slugify(slugInput ?? title),
         takenAt: getOptionalDate(formData, "takenAt"),
         title,
         width: uploaded.width,

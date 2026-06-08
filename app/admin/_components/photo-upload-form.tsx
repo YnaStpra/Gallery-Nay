@@ -1,11 +1,16 @@
 "use client";
 
-import { Loader2, UploadCloud } from "lucide-react";
+import { Loader2, RefreshCw, UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import { uploadPhoto } from "@/app/admin/actions";
 import type { AdminActionState } from "@/app/admin/actions";
+import {
+  extractPhotoMetadata,
+  generateTitleFromFilename,
+  slugify,
+} from "@/src/lib/photo-auto-fill";
 
 type PhotoUploadFormProps = {
   isConfigured: boolean;
@@ -35,23 +40,212 @@ const initialAdminActionState: AdminActionState = {
   status: "idle",
 };
 
+const emptyFormState = {
+  title: "",
+  slug: "",
+  description: "",
+  altText: "",
+  location: "",
+  country: "",
+  takenAt: "",
+  camera: "",
+  lens: "",
+  focalLength: "",
+  aperture: "",
+  shutterSpeed: "",
+  iso: "",
+  dominantColor: "#64748b",
+  colorProfile: "",
+  copyright: "",
+  collection: "",
+};
+
 export function PhotoUploadForm({
   isConfigured,
   missingConfig,
 }: PhotoUploadFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [state, formAction, pending] = useActionState(
     uploadPhoto,
     initialAdminActionState,
   );
+  const [form, setForm] = useState(emptyFormState);
+  const [selectedFileName, setSelectedFileName] = useState("");
+  const [metadataStatus, setMetadataStatus] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
+  const [metadataMessage, setMetadataMessage] = useState("");
+  const [popup, setPopup] = useState<{
+    kind: "loading" | "success" | "error";
+    message: string;
+  } | null>(null);
+  const [isTitleEdited, setIsTitleEdited] = useState(false);
+  const [isSlugEdited, setIsSlugEdited] = useState(false);
+  const [isDescriptionEdited, setIsDescriptionEdited] = useState(false);
+  const [isAltTextEdited, setIsAltTextEdited] = useState(false);
+  const [isLocationEdited, setIsLocationEdited] = useState(false);
+  const [isCountryEdited, setIsCountryEdited] = useState(false);
+
+  const resetFormState = () => {
+    setForm(emptyFormState);
+    setSelectedFileName("");
+    setMetadataStatus("idle");
+    setMetadataMessage("");
+    setIsTitleEdited(false);
+    setIsSlugEdited(false);
+    setIsDescriptionEdited(false);
+    setIsAltTextEdited(false);
+    setIsLocationEdited(false);
+    setIsCountryEdited(false);
+  };
+
+  useEffect(() => {
+    if (pending) {
+      setPopup({
+        kind: "loading",
+        message: "Upload sedang di proses",
+      });
+      return;
+    }
+
+    if (state.status === "success") {
+      setPopup({
+        kind: "success",
+        message: "Upload berhasil",
+      });
+      return;
+    }
+
+    if (state.status === "error" && state.message) {
+      setPopup({
+        kind: "error",
+        message: "Upload gagal",
+      });
+    }
+  }, [pending, state.message, state.status]);
+
+  useEffect(() => {
+    if (!popup) {
+      return undefined;
+    }
+
+    if (popup.kind === "loading") {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setPopup(null);
+    }, 2200);
+
+    return () => window.clearTimeout(timer);
+  }, [popup]);
 
   useEffect(() => {
     if (state.status === "success") {
       formRef.current?.reset();
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      window.setTimeout(() => {
+        resetFormState();
+      }, 0);
+
       router.refresh();
     }
   }, [router, state.status]);
+
+  const updateField = (
+    name: keyof typeof emptyFormState,
+    value: string,
+    markEdited = false,
+  ) => {
+    setForm((current) => ({ ...current, [name]: value }));
+
+    if (name === "title" && markEdited) setIsTitleEdited(true);
+    if (name === "slug" && markEdited) setIsSlugEdited(true);
+    if (name === "description" && markEdited) setIsDescriptionEdited(true);
+    if (name === "altText" && markEdited) setIsAltTextEdited(true);
+    if (name === "location" && markEdited) setIsLocationEdited(true);
+    if (name === "country" && markEdited) setIsCountryEdited(true);
+  };
+
+  const applyMetadata = async (file: File) => {
+    try {
+      setMetadataStatus("loading");
+      setMetadataMessage("Reading metadata...");
+
+      const draft = await extractPhotoMetadata(file);
+
+      setForm((current) => {
+        const next = { ...current };
+
+        if (!isTitleEdited && draft.title) {
+          next.title = draft.title;
+          if (!isSlugEdited) {
+            next.slug = slugify(draft.title);
+          }
+        }
+
+        if (!isDescriptionEdited && draft.description) {
+          next.description = draft.description;
+        }
+
+        if (!isAltTextEdited && draft.altText) {
+          next.altText = draft.altText;
+        }
+
+        if (!isLocationEdited && draft.location) {
+          next.location = draft.location;
+        }
+
+        if (!isCountryEdited && draft.country) {
+          next.country = draft.country;
+        }
+
+        next.camera = draft.camera ?? next.camera;
+        next.lens = draft.lens ?? next.lens;
+        next.focalLength = draft.focalLength ?? next.focalLength;
+        next.aperture = draft.aperture ?? next.aperture;
+        next.shutterSpeed = draft.shutterSpeed ?? next.shutterSpeed;
+        next.iso = draft.iso ?? next.iso;
+        next.takenAt = draft.takenAt ?? next.takenAt;
+        next.dominantColor = draft.dominantColor ?? next.dominantColor;
+
+        return next;
+      });
+
+      setMetadataStatus("ready");
+      setMetadataMessage("Metadata loaded.");
+    } catch (error) {
+      console.error("Failed to read metadata", error);
+      setMetadataStatus("error");
+      setMetadataMessage("Metadata could not be read.");
+    }
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFileName(file.name);
+
+    setForm((current) => {
+      if (isTitleEdited) return current;
+      const nextTitle = generateTitleFromFilename(file.name);
+      return {
+        ...current,
+        title: nextTitle,
+        slug: isSlugEdited ? current.slug : slugify(nextTitle),
+      };
+    });
+
+    await applyMetadata(file);
+  };
 
   return (
     <form
@@ -59,6 +253,34 @@ export function PhotoUploadForm({
       action={formAction}
       className="grid gap-5 rounded-lg border border-white/10 bg-zinc-950 p-5"
     >
+      {popup ? (
+        <div
+          className={`fixed right-4 top-4 z-[120] min-w-[240px] rounded-2xl border px-4 py-3 text-sm shadow-2xl shadow-black/30 backdrop-blur-xl ${
+            popup.kind === "loading"
+              ? "border-cyan-300/20 bg-cyan-300/10 text-cyan-50"
+              : popup.kind === "success"
+                ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-50"
+                : "border-red-300/20 bg-red-300/10 text-red-50"
+          }`}
+          role="status"
+          aria-live="polite"
+        >
+          <p className="font-semibold">
+            {popup.kind === "loading"
+              ? "Upload sedang di proses"
+              : popup.kind === "success"
+                ? "Upload berhasil"
+                : "Upload gagal"}
+          </p>
+          {popup.kind === "loading" && state.message ? (
+            <p className="mt-1 text-xs text-cyan-100/90">{state.message}</p>
+          ) : null}
+          {popup.kind !== "loading" && state.message ? (
+            <p className="mt-1 text-xs opacity-90">{state.message}</p>
+          ) : null}
+        </div>
+      ) : null}
+
       {!isConfigured ? (
         <div className="rounded-md border border-amber-300/20 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
           Upload belum aktif. Lengkapi env: {missingConfig.join(", ")}.
@@ -94,6 +316,8 @@ export function PhotoUploadForm({
             accept="image/avif,image/jpeg,image/png,image/webp"
             className={`${inputClassName} file:mr-3 file:rounded file:border-0 file:bg-cyan-300 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-black`}
             name="image"
+            onChange={handleFileChange}
+            ref={fileInputRef}
             required
             type="file"
           />
@@ -108,6 +332,24 @@ export function PhotoUploadForm({
             name="title"
             placeholder="Contoh: Sunset di Losari"
             required
+            value={form.title}
+            onChange={(event) => {
+              updateField("title", event.target.value, true);
+              if (!isSlugEdited) {
+                updateField("slug", slugify(event.target.value));
+              }
+            }}
+          />
+        </Field>
+
+        <Field label="Slug">
+          <input
+            className={inputClassName}
+            maxLength={140}
+            name="slug"
+            placeholder="Akan dibuat otomatis dari judul"
+            value={form.slug}
+            onChange={(event) => updateField("slug", event.target.value, true)}
           />
         </Field>
 
@@ -117,6 +359,8 @@ export function PhotoUploadForm({
             maxLength={80}
             name="collection"
             placeholder="Contoh: Sulawesi Field Notes"
+            value={form.collection}
+            onChange={(event) => updateField("collection", event.target.value)}
           />
         </Field>
       </div>
@@ -127,6 +371,10 @@ export function PhotoUploadForm({
           maxLength={500}
           name="description"
           placeholder="Tulis konteks singkat tentang foto ini."
+          value={form.description}
+          onChange={(event) =>
+            updateField("description", event.target.value, true)
+          }
         />
       </Field>
 
@@ -136,6 +384,8 @@ export function PhotoUploadForm({
           maxLength={180}
           name="altText"
           placeholder="Deskripsi visual singkat untuk aksesibilitas."
+          value={form.altText}
+          onChange={(event) => updateField("altText", event.target.value, true)}
         />
       </Field>
 
@@ -146,6 +396,8 @@ export function PhotoUploadForm({
             maxLength={100}
             name="location"
             placeholder="Makassar, Sulawesi Selatan"
+            value={form.location}
+            onChange={(event) => updateField("location", event.target.value, true)}
           />
         </Field>
 
@@ -155,11 +407,19 @@ export function PhotoUploadForm({
             maxLength={80}
             name="country"
             placeholder="Indonesia"
+            value={form.country}
+            onChange={(event) => updateField("country", event.target.value, true)}
           />
         </Field>
 
         <Field label="Tanggal foto">
-          <input className={inputClassName} name="takenAt" type="date" />
+          <input
+            className={inputClassName}
+            name="takenAt"
+            type="date"
+            value={form.takenAt}
+            onChange={(event) => updateField("takenAt", event.target.value)}
+          />
         </Field>
       </div>
 
@@ -170,6 +430,8 @@ export function PhotoUploadForm({
             maxLength={80}
             name="camera"
             placeholder="Sony A7 IV"
+            value={form.camera}
+            onChange={(event) => updateField("camera", event.target.value)}
           />
         </Field>
 
@@ -179,6 +441,8 @@ export function PhotoUploadForm({
             maxLength={100}
             name="lens"
             placeholder="FE 24-70mm f/2.8"
+            value={form.lens}
+            onChange={(event) => updateField("lens", event.target.value)}
           />
         </Field>
 
@@ -188,6 +452,8 @@ export function PhotoUploadForm({
             maxLength={40}
             name="focalLength"
             placeholder="35mm"
+            value={form.focalLength}
+            onChange={(event) => updateField("focalLength", event.target.value)}
           />
         </Field>
       </div>
@@ -199,6 +465,8 @@ export function PhotoUploadForm({
             maxLength={30}
             name="aperture"
             placeholder="f/5.6"
+            value={form.aperture}
+            onChange={(event) => updateField("aperture", event.target.value)}
           />
         </Field>
 
@@ -208,6 +476,8 @@ export function PhotoUploadForm({
             maxLength={30}
             name="shutterSpeed"
             placeholder="1/640"
+            value={form.shutterSpeed}
+            onChange={(event) => updateField("shutterSpeed", event.target.value)}
           />
         </Field>
 
@@ -218,15 +488,20 @@ export function PhotoUploadForm({
             name="iso"
             placeholder="100"
             type="number"
+            value={form.iso}
+            onChange={(event) => updateField("iso", event.target.value)}
           />
         </Field>
 
         <Field label="Dominant color">
           <input
             className="h-11 w-full rounded-md border border-white/10 bg-black p-1"
-            defaultValue="#64748b"
             name="dominantColor"
             type="color"
+            value={form.dominantColor}
+            onChange={(event) =>
+              updateField("dominantColor", event.target.value)
+            }
           />
         </Field>
       </div>
@@ -238,6 +513,8 @@ export function PhotoUploadForm({
             maxLength={40}
             name="colorProfile"
             placeholder="sRGB"
+            value={form.colorProfile}
+            onChange={(event) => updateField("colorProfile", event.target.value)}
           />
         </Field>
 
@@ -247,8 +524,43 @@ export function PhotoUploadForm({
             maxLength={100}
             name="copyright"
             placeholder="(c) Yan Saputra"
+            value={form.copyright}
+            onChange={(event) => updateField("copyright", event.target.value)}
           />
         </Field>
+      </div>
+
+      <div className="rounded-md border border-white/10 bg-black/40 p-4 text-sm text-zinc-300">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="font-medium text-white">Auto-fill status</p>
+            <p className="mt-1 text-zinc-400">
+              {metadataMessage || "Select an image to read metadata."}
+            </p>
+            {selectedFileName ? (
+              <p className="mt-2 text-xs uppercase tracking-[0.16em] text-zinc-500">
+                Selected file: {selectedFileName}
+              </p>
+            ) : null}
+          </div>
+          <button
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/10 bg-white/5 px-4 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+            type="button"
+            disabled={!selectedFileName || metadataStatus === "loading"}
+            onClick={() => {
+              const file = fileInputRef.current?.files?.[0];
+              if (file) {
+                void applyMetadata(file);
+              }
+            }}
+          >
+            <RefreshCw className="size-4" />
+            Re-scan Metadata
+          </button>
+        </div>
+        <p className="mt-3 text-xs text-zinc-500">
+          Manual edits are preserved after the field has been changed.
+        </p>
       </div>
 
       <label className="flex items-center gap-3 text-sm text-zinc-300">
