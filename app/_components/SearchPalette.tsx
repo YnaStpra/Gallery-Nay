@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Search, ArrowRight, X } from "lucide-react";
+import { useKeyboardShortcuts } from "@/src/hooks/useKeyboardShortcuts";
+import { keyboardShortcuts } from "@/src/lib/keyboard-shortcuts";
 
 type SearchItem = {
   id: string;
@@ -20,6 +22,20 @@ type SearchPaletteProps = {
 export function SearchPalette({ open, onClose }: SearchPaletteProps) {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<SearchItem[] | null>(null);
+
+  useKeyboardShortcuts(
+    useMemo(
+      () => [
+        {
+          id: "search-close",
+          keys: keyboardShortcuts.find((item) => item.id === "close")?.keys ?? [],
+          handler: () => onClose(),
+          enabled: open,
+        },
+      ],
+      [open, onClose],
+    ),
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -42,17 +58,6 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
       ignore = true;
     };
   }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose]);
 
   const filteredItems = useMemo(() => {
     const normalized = query.trim().toLowerCase();

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   BookOpen,
   Camera,
@@ -16,6 +16,10 @@ import {
   Info,
 } from "lucide-react";
 import { SearchPalette } from "./SearchPalette";
+import { useRouter } from "next/navigation";
+import { useKeyboardShortcuts } from "@/src/hooks/useKeyboardShortcuts";
+import { useKeyboardShortcutsLayer } from "./KeyboardShortcutsLayer";
+import { keyboardShortcuts } from "@/src/lib/keyboard-shortcuts";
 
 const navItems = [
   { href: "/", label: "Gallery", icon: Grid },
@@ -31,6 +35,42 @@ const navItems = [
 export function MainNavigation() {
   const [open, setOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const router = useRouter();
+  const { openHelp } = useKeyboardShortcutsLayer();
+
+  const globalShortcuts = useMemo(
+    () => [
+      {
+        id: "nav-focus-search",
+        keys: keyboardShortcuts.filter(
+          (item) => item.id === "focus-search" || item.id === "global-search",
+        ).flatMap((item) => item.keys),
+        handler: (event: KeyboardEvent) => {
+          event.preventDefault();
+          setPaletteOpen(true);
+        },
+      },
+      {
+        id: "nav-help",
+        keys: keyboardShortcuts.find((item) => item.id === "help")?.keys ?? [],
+        handler: (event: KeyboardEvent) => {
+          event.preventDefault();
+          openHelp();
+        },
+      },
+      {
+        id: "nav-admin",
+        keys: keyboardShortcuts.find((item) => item.id === "admin-upload")?.keys ?? [],
+        handler: (event: KeyboardEvent) => {
+          event.preventDefault();
+          router.push("/admin");
+        },
+      },
+    ],
+    [openHelp, router],
+  );
+
+  useKeyboardShortcuts(globalShortcuts);
 
   return (
     <>

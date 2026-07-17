@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MainNavigation } from "./_components/MainNavigation";
+import { KeyboardShortcutsLayer } from "./_components/KeyboardShortcutsLayer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,14 +58,16 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-[#050505] text-white">
-        <MainNavigation />
-        <main className="flex-1">{children}</main>
-        <a
-          href="/admin"
-          className="fixed left-4 bottom-4 z-50 inline-flex items-center justify-center rounded-full bg-cyan-500/95 px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-cyan-500/20 transition hover:bg-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-300"
-        >
-          Admin Upload
-        </a>
+        <KeyboardShortcutsLayer>
+          <MainNavigation />
+          <main className="flex-1">{children}</main>
+          <a
+            href="/admin"
+            className="fixed left-4 bottom-4 z-50 inline-flex items-center justify-center rounded-full bg-cyan-500/95 px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-cyan-500/20 transition hover:bg-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+          >
+            Admin Upload
+          </a>
+        </KeyboardShortcutsLayer>
       </body>
     </html>
   );
