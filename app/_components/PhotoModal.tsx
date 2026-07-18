@@ -26,11 +26,11 @@ import type { GalleryPhoto } from "@/src/lib/gallery-data";
 import { DownloadRequestPanel } from "./DownloadRequestPanel";
 import { ModalCloseButton } from "./ModalCloseButton";
 import { PhotoCollectorActions } from "./PhotoCollectorActions";
-import { PhotoHistogram } from "./PhotoHistogram";
 import { PhotoPalette } from "./PhotoPalette";
 import { getPreviewImageSize } from "./photo-utils";
 import { NearbyPhotos } from "@/components/NearbyPhotos";
 import { useKeyboardShortcutsLayer } from "./KeyboardShortcutsLayer";
+import { Histogram } from "@/components/photo/Histogram";
 
 type Props = {
   photo: GalleryPhoto;
@@ -625,7 +625,7 @@ function PhotoSidebar({
         </div>
 
         <div ref={histogramRef}>
-          <PhotoHistogram imageUrl={photo.imageUrl} />
+          <Histogram imageUrl={photo.imageUrl} />
         </div>
         <div ref={paletteRef}>
           <PhotoPalette imageUrl={photo.imageUrl} />
