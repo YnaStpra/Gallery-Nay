@@ -114,8 +114,6 @@ export function useFavorites() {
     [favorites],
   );
 
-  const getFavoriteCount = useCallback(() => favorites.size, [favorites]);
-
   const getFavoritesList = useCallback(
     () =>
       Object.entries(data)
@@ -135,7 +133,6 @@ export function useFavorites() {
     removeFavorite,
     toggleFavorite,
     isFavorited,
-    getFavoriteCount,
     getFavoritesList,
     clearFavorites,
   };

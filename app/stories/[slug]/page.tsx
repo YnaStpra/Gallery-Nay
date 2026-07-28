@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { JourneyTracker } from "@/app/_components/JourneyTracker";
 import { getStoryBySlug, type StoryDetail } from "@/src/lib/story-data";
 import { getStories } from "@/src/lib/story-data";
 
@@ -85,11 +84,6 @@ export default async function StoryPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-[#050505] text-white">
-      <JourneyTracker
-        country={story.country}
-        location={story.location}
-        story={story.title}
-      />
       <section className="relative overflow-hidden border-b border-white/10 pb-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(8,145,178,0.14),_transparent_30%)]" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-8 lg:px-12">

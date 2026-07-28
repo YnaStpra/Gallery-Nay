@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 import { motion } from "framer-motion";
 import {
@@ -17,15 +17,13 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 
-import { useFavorites, useJourney, useRecentlyViewed } from "@/src/hooks";
+import { useFavorites } from "@/src/hooks";
 import { useKeyboardShortcuts } from "@/src/hooks/useKeyboardShortcuts";
 import { keyboardShortcuts } from "@/src/lib/keyboard-shortcuts";
 import type { GalleryPhoto } from "@/src/lib/gallery-data";
 import { DownloadRequestPanel } from "./DownloadRequestPanel";
 import { ModalCloseButton } from "./ModalCloseButton";
-import { PhotoCollectorActions } from "./PhotoCollectorActions";
 import { PhotoPalette } from "./PhotoPalette";
 import { getPreviewImageSize } from "./photo-utils";
 import { NearbyPhotos } from "@/components/NearbyPhotos";
@@ -46,23 +44,40 @@ function DetailRow({
   label,
   value,
   accent,
+  href,
 }: {
   label: string;
   value: string;
   accent: string;
+  href?: string;
 }) {
+  const content = (
+    <dd className="text-sm leading-6 text-white">
+      <span
+        className="inline-flex h-1.5 w-1.5 rounded-full"
+        style={{ backgroundColor: accent }}
+      />
+      <span className="ml-2">{value}</span>
+    </dd>
+  );
+
   return (
     <div className="grid gap-1">
       <dt className="text-[11px] uppercase tracking-[0.24em] text-zinc-400">
         {label}
       </dt>
-      <dd className="text-sm leading-6 text-white">
-        <span
-          className="inline-flex h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: accent }}
-        />
-        <span className="ml-2">{value}</span>
-      </dd>
+      {href ? (
+        <a
+          className="inline-flex items-center text-sm leading-6 text-white transition hover:text-cyan-300"
+          href={href}
+          rel="noreferrer"
+          target="_blank"
+        >
+          {content}
+        </a>
+      ) : (
+        content
+      )}
     </div>
   );
 }
@@ -83,6 +98,14 @@ function PhotoFacts({
           label="Location"
           value={`${photo.location}, ${photo.country}`}
           accent={accent}
+        />
+      ) : null}
+      {photo.location ? (
+        <DetailRow
+          label="Open in Google Maps"
+          value={photo.location}
+          accent={accent}
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(photo.location)}`}
         />
       ) : null}
       {photo.takenAt ? (
@@ -265,10 +288,7 @@ export function PhotoModal({
   onPrevious,
   onNext,
 }: Props) {
-  const router = useRouter();
   const { openHelp } = useKeyboardShortcutsLayer();
-  const { addToViewed } = useRecentlyViewed();
-  const { addCollection, addCountry, addLocation } = useJourney();
   const { toggleFavorite } = useFavorites();
   const startSwipe = useRef<{ x: number; y: number } | null>(null);
   const downloadRef = useRef<HTMLDivElement>(null);
@@ -359,7 +379,14 @@ export function PhotoModal({
         {
           id: "photo-map",
           keys: keyboardShortcuts.find((item) => item.id === "map")?.keys ?? [],
-          handler: () => router.push(`/map?photo=${photo.id}`),
+          handler: () => {
+            if (!photo.location) return;
+            window.open(
+              `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(photo.location)}`,
+              "_blank",
+              "noopener,noreferrer",
+            );
+          },
           enabled: isOpen,
         },
         {
@@ -436,25 +463,13 @@ export function PhotoModal({
         onPrevious,
         openHelp,
         photo.id,
+        photo.location,
         photo.title,
-        router,
         shareUrl,
         toggleFavorite,
       ],
     ),
   );
-
-  useEffect(() => {
-    if (!isOpen) return;
-    addToViewed(photo.id);
-    addCountry(photo.country);
-    addLocation(photo.location);
-    addCollection(photo.collection);
-
-    fetch(`/api/photo/${photo.id}/view`, { method: "POST" }).catch((error) => {
-      console.error("Failed to track photo view", error);
-    });
-  }, [addCollection, addCountry, addLocation, addToViewed, isOpen, photo.collection, photo.country, photo.id, photo.location]);
 
   if (!isOpen) {
     return null;
@@ -706,7 +721,6 @@ function PhotoSidebar({
             Quick Actions
           </p>
           <div className="mt-4 grid gap-3">
-            <PhotoCollectorActions photoId={photo.id} slug={photo.slug} title={photo.title} />
             <div ref={downloadRef}>
               <DownloadRequestPanel photoId={photo.id} photoTitle={photo.title} />
             </div>

@@ -2,19 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import {
-  BookOpen,
-  Camera,
-  Compass,
-  Grid,
-  Menu,
-  Sparkles,
-  Timeline,
-  X,
-  MapPin,
-  Search,
-  Info,
-} from "lucide-react";
+import { BookOpen, Grid, Menu, X, Search, Info, Compass } from "lucide-react";
 import { SearchPalette } from "./SearchPalette";
 import { useRouter } from "next/navigation";
 import { useKeyboardShortcuts } from "@/src/hooks/useKeyboardShortcuts";
@@ -23,12 +11,8 @@ import { keyboardShortcuts } from "@/src/lib/keyboard-shortcuts";
 
 const navItems = [
   { href: "/", label: "Gallery", icon: Grid },
-  { href: "/stories", label: "Stories", icon: BookOpen },
-  { href: "/timeline", label: "Timeline", icon: Timeline },
   { href: "/collections", label: "Collections", icon: Compass },
-  { href: "/map", label: "Map", icon: MapPin },
-  { href: "/insights", label: "Insights", icon: Sparkles },
-  { href: "/gear", label: "Gear", icon: Camera },
+  { href: "/stories", label: "Stories", icon: BookOpen },
   { href: "/about", label: "About", icon: Info },
 ];
 
@@ -94,7 +78,7 @@ export function MainNavigation() {
               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-200 transition hover:border-cyan-300/30 hover:bg-white/10"
             >
               <Search className="size-4" />
-              CMD + K
+              Search
             </button>
             <nav className="hidden items-center gap-1 xl:flex">
               {navItems.map((item) => {

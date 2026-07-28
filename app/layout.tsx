@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   authors: [{ name: "Yan Saputra" }],
   creator: "Yan Saputra",
   description:
-    "A travel photography journal by Yan Saputra, blending premium imagery with stories, insights, and editorial journeys.",
+    "A minimalist photography portfolio by Yan Saputra focused on gallery viewing, collections, and stories.",
   keywords: [
     "travel photography",
     "photo journal",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     description:
-      "Explore Yan Saputra's travel photography journal with stories, timeline, gear insights, and cinematic visuals.",
+      "Explore Yan Saputra's photography portfolio through galleries, collections, and stories.",
     locale: "en_US",
     siteName: "Yan Saputra Photography",
     title: "Yan Saputra Photography",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     description:
-      "Travel photography stories, timelines, and insights from Yan Saputra.",
+      "Photography portfolio by Yan Saputra.",
     title: "Yan Saputra Photography",
   },
 };
@@ -61,12 +61,6 @@ export default function RootLayout({
         <KeyboardShortcutsLayer>
           <MainNavigation />
           <main className="flex-1">{children}</main>
-          <a
-            href="/admin"
-            className="fixed left-4 bottom-4 z-50 inline-flex items-center justify-center rounded-full bg-cyan-500/95 px-4 py-3 text-sm font-semibold text-white shadow-xl shadow-cyan-500/20 transition hover:bg-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-300"
-          >
-            Admin Upload
-          </a>
         </KeyboardShortcutsLayer>
       </body>
     </html>
