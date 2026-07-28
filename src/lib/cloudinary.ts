@@ -9,6 +9,10 @@ type UploadMetadata = {
   location?: string;
 };
 
+type RawUploadMetadata = {
+  fileName: string;
+};
+
 const cloudinaryEnvKeys = [
   "CLOUDINARY_CLOUD_NAME",
   "CLOUDINARY_API_KEY",
@@ -58,6 +62,45 @@ export async function uploadPhotoToCloudinary(
         resource_type: "image",
         unique_filename: true,
         use_filename: true,
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        if (!result) {
+          reject(new Error("Cloudinary did not return an upload result"));
+          return;
+        }
+
+        resolve(result);
+      },
+    );
+
+    uploadStream.end(buffer);
+  });
+}
+
+export async function uploadRawFileToCloudinary(
+  file: File,
+  metadata: RawUploadMetadata,
+) {
+  configureCloudinary();
+
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+
+  return new Promise<UploadApiResponse>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "gallery-nay/presets",
+        overwrite: false,
+        public_id: metadata.fileName.replace(/\.[^.]+$/, ""),
+        raw_convert: "aspose",
+        resource_type: "raw",
+        use_filename: true,
+        unique_filename: true,
       },
       (error, result) => {
         if (error) {

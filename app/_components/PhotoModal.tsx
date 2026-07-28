@@ -132,6 +132,130 @@ function PhotoFacts({
   );
 }
 
+function formatFileSize(size?: number) {
+  if (!size || size <= 0) return "Unknown";
+  const mb = size / (1024 * 1024);
+  return `${mb >= 1 ? mb.toFixed(0) : (size / 1024).toFixed(0)} ${mb >= 1 ? "MB" : "KB"}`;
+}
+
+function EditingPresetCard({ photo }: { photo: GalleryPhoto }) {
+  if (!photo.lutName && !photo.editingSoftware && !photo.cameraProfile && !photo.lutUrl) {
+    return null;
+  }
+
+  const formatLabel = photo.lutFormat?.toUpperCase() ?? "PRESET";
+  const fileSize = formatFileSize(photo.lutFileSize);
+
+  return (
+    <section className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">
+            Editing
+          </p>
+          <h3 className="mt-2 text-sm font-semibold text-white">Preset</h3>
+        </div>
+        <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-300">
+          {formatLabel}
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 text-sm">
+        {photo.lutName ? (
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+              Preset
+            </p>
+            <p className="mt-1 text-white">{photo.lutName}</p>
+          </div>
+        ) : null}
+        {photo.lutVersion ? (
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+              Version
+            </p>
+            <p className="mt-1 text-white">{photo.lutVersion}</p>
+          </div>
+        ) : null}
+        {photo.editingSoftware ? (
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+              Software
+            </p>
+            <p className="mt-1 text-white">{photo.editingSoftware}</p>
+          </div>
+        ) : null}
+        {photo.cameraProfile ? (
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+              Camera Profile
+            </p>
+            <p className="mt-1 text-white">{photo.cameraProfile}</p>
+          </div>
+        ) : null}
+        {photo.lutFormat || photo.lutFileName || photo.lutFileSize ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {photo.lutFormat ? (
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+                  Format
+                </p>
+                <p className="mt-1 text-white">{photo.lutFormat.toUpperCase()}</p>
+              </div>
+            ) : null}
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+                Size
+              </p>
+              <p className="mt-1 text-white">{fileSize}</p>
+            </div>
+          </div>
+        ) : null}
+        {photo.lutDescription ? (
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+              Description
+            </p>
+            <p className="mt-1 leading-6 text-zinc-200">{photo.lutDescription}</p>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3 text-sm">
+        {photo.allowDownload ? (
+          <a
+            href={`/api/photo/${photo.id}/preset`}
+            className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-xs font-medium text-cyan-100 transition hover:bg-cyan-300/15"
+          >
+            Download Preset
+          </a>
+        ) : (
+          <p className="text-xs text-zinc-400">
+            Preset download disabled by photographer
+          </p>
+        )}
+        <div className="mt-3 flex flex-wrap gap-2">
+          {photo.lutFormat ? (
+            <span className="rounded-full border border-white/10 bg-black/40 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-300">
+              {photo.lutFormat}
+            </span>
+          ) : null}
+          {photo.editingSoftware ? (
+            <span className="rounded-full border border-white/10 bg-black/40 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-300">
+              {photo.editingSoftware}
+            </span>
+          ) : null}
+          {photo.isPremium ? (
+            <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-amber-100">
+              Premium
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function PhotoModal({
   photo,
   isOpen,
@@ -553,6 +677,7 @@ function PhotoSidebar({
       </div>
 
       <PhotoFacts photo={photo} accent={accent} formattedCapture={formattedCapture} />
+      <EditingPresetCard photo={photo} />
 
       <div className="rounded-[24px] border border-white/10 bg-white/5 p-4 text-sm text-zinc-400">
         <div className="flex items-center gap-3">

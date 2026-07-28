@@ -6,6 +6,7 @@ import {
   deletePhotoFromCloudinary,
   extractCloudinaryPublicId,
   isCloudinaryConfigured,
+  uploadRawFileToCloudinary,
   uploadPhotoToCloudinary,
 } from "@/src/lib/cloudinary";
 import { slugify } from "@/src/lib/photo-auto-fill";
@@ -18,6 +19,16 @@ export type AdminActionState = {
 };
 
 const maxImageSize = 10 * 1024 * 1024;
+const maxPresetSize = 100 * 1024 * 1024;
+const allowedPresetExtensions = new Set([
+  ".cube",
+  ".xmp",
+  ".dng",
+  ".3dl",
+  ".look",
+  ".icc",
+  ".icm",
+]);
 
 function getText(formData: FormData, name: string) {
   const value = formData.get(name);
@@ -63,6 +74,11 @@ function fail(message: string): AdminActionState {
   };
 }
 
+function getFileExtension(fileName: string) {
+  const match = fileName.match(/\.[^.]+$/);
+  return match?.[0].toLowerCase() ?? "";
+}
+
 function authorizeAdmin(formData: FormData) {
   const adminUploadKey = process.env.ADMIN_UPLOAD_KEY;
 
@@ -98,6 +114,7 @@ export async function uploadPhoto(
   const title = getText(formData, "title");
   const slugInput = getOptionalText(formData, "slug");
   const image = formData.get("image");
+  const preset = formData.get("preset");
 
   if (!title) {
     return fail("Judul foto wajib diisi.");
@@ -115,8 +132,35 @@ export async function uploadPhoto(
     return fail("Ukuran gambar maksimal 10MB.");
   }
 
+  if (preset && !(preset instanceof File)) {
+    return fail("Preset tidak valid.");
+  }
+
+  if (preset instanceof File && preset.size > 0) {
+    const extension = getFileExtension(preset.name);
+
+    if (!allowedPresetExtensions.has(extension)) {
+      return fail("Format preset tidak didukung.");
+    }
+
+    if (preset.size > maxPresetSize) {
+      return fail("Ukuran preset maksimal 100MB.");
+    }
+  }
+
   try {
     const location = getOptionalText(formData, "location");
+    const presetName = getOptionalText(formData, "lutName");
+    const presetVersion = getOptionalText(formData, "lutVersion");
+    const presetDescription = getOptionalText(formData, "lutDescription");
+    const editingSoftware = getOptionalText(formData, "editingSoftware");
+    const cameraProfile = getOptionalText(formData, "cameraProfile");
+    const allowDownload = formData.get("allowDownload") === "on";
+    const isPremium = formData.get("isPremium") === "on";
+    const presetFile = preset instanceof File && preset.size > 0 ? preset : null;
+    const uploadedPreset = presetFile
+      ? await uploadRawFileToCloudinary(presetFile, { fileName: presetFile.name })
+      : null;
     const uploaded = await uploadPhotoToCloudinary(image, {
       alt: getOptionalText(formData, "altText"),
       location,
@@ -143,10 +187,22 @@ export async function uploadPhoto(
         height: uploaded.height,
         imageUrl: uploaded.secure_url,
         isDownloadable: false,
+        allowDownload,
+        cameraProfile,
         iso: getOptionalInteger(formData, "iso"),
+        isPremium,
         lens: getOptionalText(formData, "lens"),
         location,
+        lutDescription: presetDescription,
+        lutFileName: presetFile?.name ?? null,
+        lutFileSize: presetFile?.size ?? null,
+        lutFormat: presetFile ? getFileExtension(presetFile.name).replace(/^\./, "").toUpperCase() : null,
+        lutName: presetName,
+        lutUrl: uploadedPreset?.secure_url ?? null,
+        lutVersion: presetVersion,
+        editingSoftware,
         published: formData.get("published") === "on",
+        uploadedAt: presetFile ? new Date() : null,
         shutterSpeed: getOptionalText(formData, "shutterSpeed"),
         slug: slugify(slugInput ?? title),
         takenAt: getOptionalDate(formData, "takenAt"),
@@ -210,6 +266,18 @@ export async function updatePhoto(
         shutterSpeed: getNullableText(formData, "shutterSpeed"),
         takenAt: getNullableDate(formData, "takenAt"),
         title,
+        allowDownload: formData.get("allowDownload") === "on",
+        cameraProfile: getNullableText(formData, "cameraProfile"),
+        editingSoftware: getNullableText(formData, "editingSoftware"),
+        isPremium: formData.get("isPremium") === "on",
+        lutDescription: getNullableText(formData, "lutDescription"),
+        lutFileName: getNullableText(formData, "lutFileName"),
+        lutFileSize: getNullableInteger(formData, "lutFileSize"),
+        lutFormat: getNullableText(formData, "lutFormat"),
+        lutName: getNullableText(formData, "lutName"),
+        lutUrl: getNullableText(formData, "lutUrl"),
+        lutVersion: getNullableText(formData, "lutVersion"),
+        uploadedAt: getNullableDate(formData, "uploadedAt"),
       },
       where: { id },
     });

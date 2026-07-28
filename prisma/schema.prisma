@@ -37,6 +37,18 @@ model Photo {
   dominantColor      String?
   copyright          String?
   isDownloadable     Boolean   @default(false)
+  lutUrl             String?
+  lutFileName        String?
+  lutFormat          String?
+  lutFileSize        Int?
+  lutName            String?
+  lutVersion         String?
+  lutDescription     String?
+  editingSoftware    String?
+  cameraProfile      String?
+  allowDownload      Boolean   @default(false)
+  isPremium          Boolean   @default(false)
+  uploadedAt         DateTime?
   published          Boolean   @default(true)
   viewCount          Int       @default(0)
   favoriteCount      Int       @default(0)

@@ -25,6 +25,18 @@ export type GalleryPhoto = {
   height?: number;
   blurDataUrl?: string;
   copyright: string;
+  lutUrl?: string;
+  lutFileName?: string;
+  lutFormat?: string;
+  lutFileSize?: number;
+  lutName?: string;
+  lutVersion?: string;
+  lutDescription?: string;
+  editingSoftware?: string;
+  cameraProfile?: string;
+  allowDownload?: boolean;
+  isPremium?: boolean;
+  uploadedAt?: string;
   takenAtRaw?: string;
   slug?: string;
   coordinates?: { lat: number; lng: number };
@@ -287,6 +299,8 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       collection: photo.collection ?? "Published Archive",
       colorProfile: photo.colorProfile ?? "sRGB",
       copyright: photo.copyright ?? "(c) Yan Saputra",
+      allowDownload: photo.allowDownload,
+      cameraProfile: photo.cameraProfile ?? undefined,
       country: photo.country ?? "Not set",
       coordinates:
         photo.latitude != null && photo.longitude != null
@@ -298,6 +312,7 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
           : "Not set",
       dominantColor: photo.dominantColor ?? "#64748b",
       blurDataUrl: photo.blurDataUrl ?? undefined,
+      editingSoftware: photo.editingSoftware ?? undefined,
       fileType: photo.fileType ?? "Display copy",
       focalLength: photo.focalLength ?? "Not set",
       id: photo.id,
@@ -305,10 +320,19 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       iso: photo.iso ? String(photo.iso) : "Not set",
       lens: photo.lens ?? "Not set",
       location: photo.location ?? "Not set",
+      lutDescription: photo.lutDescription ?? undefined,
+      lutFileName: photo.lutFileName ?? undefined,
+      lutFileSize: photo.lutFileSize ?? undefined,
+      lutFormat: photo.lutFormat ?? undefined,
+      lutName: photo.lutName ?? undefined,
+      lutVersion: photo.lutVersion ?? undefined,
+      lutUrl: photo.lutUrl ?? undefined,
+      isPremium: photo.isPremium,
       shutterSpeed: photo.shutterSpeed ?? "Not set",
       story: photo.description ?? "Published travel frame.",
       takenAt: formatPhotoDate(photo.takenAt),
       takenAtRaw: photo.takenAt?.toISOString() ?? undefined,
+      uploadedAt: photo.uploadedAt?.toISOString() ?? undefined,
       collectionId: photo.collectionId ?? undefined,
       slug: photo.slug ?? undefined,
       title: photo.title,

@@ -41,6 +41,8 @@ const initialAdminActionState: AdminActionState = {
 };
 
 const emptyFormState = {
+  allowDownload: false,
+  cameraProfile: "",
   title: "",
   slug: "",
   description: "",
@@ -58,6 +60,13 @@ const emptyFormState = {
   colorProfile: "",
   copyright: "",
   collection: "",
+  editingSoftware: "",
+  isPremium: false,
+  lutDescription: "",
+  lutFileName: "",
+  lutFormat: "",
+  lutName: "",
+  lutVersion: "",
 };
 
 export function PhotoUploadForm({
@@ -83,6 +92,7 @@ export function PhotoUploadForm({
   const [isAltTextEdited, setIsAltTextEdited] = useState(false);
   const [isLocationEdited, setIsLocationEdited] = useState(false);
   const [isCountryEdited, setIsCountryEdited] = useState(false);
+  const [selectedPresetName, setSelectedPresetName] = useState("");
 
   const resetFormState = () => {
     setForm(emptyFormState);
@@ -95,6 +105,7 @@ export function PhotoUploadForm({
     setIsAltTextEdited(false);
     setIsLocationEdited(false);
     setIsCountryEdited(false);
+    setSelectedPresetName("");
   };
 
   useEffect(() => {
@@ -220,6 +231,16 @@ export function PhotoUploadForm({
     await applyMetadata(file);
   };
 
+  const handlePresetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    setSelectedPresetName(file?.name ?? "");
+    setForm((current) => ({
+      ...current,
+      lutFileName: file?.name ?? "",
+      lutFormat: file ? file.name.split(".").pop()?.toUpperCase() ?? "" : "",
+    }));
+  };
+
   return (
     <form
       ref={formRef}
@@ -295,6 +316,110 @@ export function PhotoUploadForm({
             type="file"
           />
         </Field>
+      </div>
+
+      <div className="grid gap-4 rounded-2xl border border-white/10 bg-black/30 p-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">
+            Editing Preset
+          </p>
+          <h3 className="mt-2 text-lg font-semibold text-white">
+            Upload Preset / LUT
+          </h3>
+          <p className="mt-1 text-sm text-zinc-400">
+            Supported: .cube, .xmp, .dng, .3dl, .look, .icc, .icm
+          </p>
+        </div>
+        <Field label="Preset file">
+          <input
+            accept=".cube,.xmp,.dng,.3dl,.look,.icc,.icm"
+            className={`${inputClassName} file:mr-3 file:rounded file:border-0 file:bg-cyan-300 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-black`}
+            name="preset"
+            onChange={handlePresetChange}
+            type="file"
+          />
+        </Field>
+        {selectedPresetName ? (
+          <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+            Selected preset: {selectedPresetName}
+          </p>
+        ) : null}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Field label="Preset Name">
+            <input
+              className={inputClassName}
+              maxLength={120}
+              name="lutName"
+              placeholder="Moody Forest v2"
+              value={form.lutName}
+              onChange={(event) => updateField("lutName", event.target.value)}
+            />
+          </Field>
+          <Field label="Preset Version">
+            <input
+              className={inputClassName}
+              maxLength={40}
+              name="lutVersion"
+              placeholder="2.1"
+              value={form.lutVersion}
+              onChange={(event) => updateField("lutVersion", event.target.value)}
+            />
+          </Field>
+          <Field label="Editing Software">
+            <input
+              className={inputClassName}
+              maxLength={80}
+              name="editingSoftware"
+              placeholder="Adobe Lightroom Classic"
+              value={form.editingSoftware}
+              onChange={(event) =>
+                updateField("editingSoftware", event.target.value)
+              }
+            />
+          </Field>
+          <Field label="Camera Profile">
+            <input
+              className={inputClassName}
+              maxLength={80}
+              name="cameraProfile"
+              placeholder="Adobe Landscape"
+              value={form.cameraProfile}
+              onChange={(event) =>
+                updateField("cameraProfile", event.target.value)
+              }
+            />
+          </Field>
+        </div>
+        <Field label="Preset Description">
+          <textarea
+            className={`${inputClassName} min-h-24 resize-y`}
+            maxLength={500}
+            name="lutDescription"
+            placeholder="Soft contrast with warm cinematic tones."
+            value={form.lutDescription}
+            onChange={(event) =>
+              updateField("lutDescription", event.target.value)
+            }
+          />
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="flex items-center gap-3 text-sm text-zinc-300">
+            <input
+              className="size-4 rounded border-white/20 bg-black"
+              name="allowDownload"
+              type="checkbox"
+            />
+            Allow Download
+          </label>
+          <label className="flex items-center gap-3 text-sm text-zinc-300">
+            <input
+              className="size-4 rounded border-white/20 bg-black"
+              name="isPremium"
+              type="checkbox"
+            />
+            Premium Preset
+          </label>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
