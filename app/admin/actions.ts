@@ -7,6 +7,7 @@ import {
   extractCloudinaryPublicId,
   isCloudinaryConfigured,
   uploadRawFileToCloudinary,
+  uploadOriginalImageToCloudinary,
   uploadPhotoToCloudinary,
 } from "@/src/lib/cloudinary";
 import { slugify } from "@/src/lib/photo-auto-fill";
@@ -19,6 +20,7 @@ export type AdminActionState = {
 };
 
 const maxImageSize = 10 * 1024 * 1024;
+const maxOriginalImageSize = 100 * 1024 * 1024;
 const maxPresetSize = 100 * 1024 * 1024;
 const allowedPresetExtensions = new Set([
   ".cube",
@@ -114,6 +116,7 @@ export async function uploadPhoto(
   const title = getText(formData, "title");
   const slugInput = getOptionalText(formData, "slug");
   const image = formData.get("image");
+  const originalImage = formData.get("originalImage");
   const preset = formData.get("preset");
 
   if (!title) {
@@ -130,6 +133,20 @@ export async function uploadPhoto(
 
   if (image.size > maxImageSize) {
     return fail("Ukuran gambar maksimal 10MB.");
+  }
+
+  if (originalImage && !(originalImage instanceof File)) {
+    return fail("Original image tidak valid.");
+  }
+
+  if (originalImage instanceof File && originalImage.size > 0) {
+    if (!originalImage.type.startsWith("image/")) {
+      return fail("Original image harus berupa gambar.");
+    }
+
+    if (originalImage.size > maxOriginalImageSize) {
+      return fail("Ukuran original image maksimal 100MB.");
+    }
   }
 
   if (preset && !(preset instanceof File)) {
@@ -157,15 +174,19 @@ export async function uploadPhoto(
     const cameraProfile = getOptionalText(formData, "cameraProfile");
     const allowDownload = formData.get("allowDownload") === "on";
     const isPremium = formData.get("isPremium") === "on";
-    const presetFile = preset instanceof File && preset.size > 0 ? preset : null;
-    const uploadedPreset = presetFile
-      ? await uploadRawFileToCloudinary(presetFile, { fileName: presetFile.name })
-      : null;
     const uploaded = await uploadPhotoToCloudinary(image, {
       alt: getOptionalText(formData, "altText"),
       location,
       title,
     });
+    const originalFile = originalImage instanceof File && originalImage.size > 0 ? originalImage : null;
+    const uploadedOriginal = originalFile
+      ? await uploadOriginalImageToCloudinary(originalFile, { fileName: originalFile.name })
+      : null;
+    const presetFile = preset instanceof File && preset.size > 0 ? preset : null;
+    const uploadedPreset = presetFile
+      ? await uploadRawFileToCloudinary(presetFile, { fileName: presetFile.name })
+      : null;
 
     const photo = await prisma.photo.create({
       data: {
@@ -189,6 +210,12 @@ export async function uploadPhoto(
         isDownloadable: false,
         allowDownload,
         cameraProfile,
+        originalFileSize: originalFile?.size ?? null,
+        originalFileType: originalFile?.type ?? null,
+        originalHeight: uploadedOriginal?.height ?? null,
+        originalImageUrl: uploadedOriginal?.secure_url ?? null,
+        originalPublicId: uploadedOriginal?.public_id ?? null,
+        originalWidth: uploadedOriginal?.width ?? null,
         iso: getOptionalInteger(formData, "iso"),
         isPremium,
         lens: getOptionalText(formData, "lens"),
@@ -277,6 +304,12 @@ export async function updatePhoto(
         lutName: getNullableText(formData, "lutName"),
         lutUrl: getNullableText(formData, "lutUrl"),
         lutVersion: getNullableText(formData, "lutVersion"),
+        originalFileSize: getNullableInteger(formData, "originalFileSize"),
+        originalFileType: getNullableText(formData, "originalFileType"),
+        originalHeight: getNullableInteger(formData, "originalHeight"),
+        originalImageUrl: getNullableText(formData, "originalImageUrl"),
+        originalPublicId: getNullableText(formData, "originalPublicId"),
+        originalWidth: getNullableInteger(formData, "originalWidth"),
         uploadedAt: getNullableDate(formData, "uploadedAt"),
       },
       where: { id },

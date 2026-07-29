@@ -5,6 +5,7 @@ export type GalleryPhoto = {
   title: string;
   story: string;
   imageUrl: string;
+  originalImageUrl?: string;
   alt: string;
   location: string;
   country: string;
@@ -23,6 +24,10 @@ export type GalleryPhoto = {
   dominantColor: string;
   width?: number;
   height?: number;
+  originalWidth?: number;
+  originalHeight?: number;
+  originalFileSize?: number;
+  originalFileType?: string;
   blurDataUrl?: string;
   copyright: string;
   lutUrl?: string;
@@ -317,6 +322,11 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       focalLength: photo.focalLength ?? "Not set",
       id: photo.id,
       imageUrl: photo.imageUrl,
+      originalFileSize: photo.originalFileSize ?? undefined,
+      originalFileType: photo.originalFileType ?? undefined,
+      originalHeight: photo.originalHeight ?? undefined,
+      originalImageUrl: photo.originalImageUrl ?? undefined,
+      originalWidth: photo.originalWidth ?? undefined,
       iso: photo.iso ? String(photo.iso) : "Not set",
       lens: photo.lens ?? "Not set",
       location: photo.location ?? "Not set",

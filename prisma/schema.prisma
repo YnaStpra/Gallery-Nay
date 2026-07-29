@@ -13,7 +13,9 @@ model Photo {
   slug               String?
   description        String?
   imageUrl           String
+  originalImageUrl   String?
   cloudinaryPublicId String?
+  originalPublicId   String?
   blurDataUrl        String?
   altText            String?
   location           String?
@@ -32,6 +34,10 @@ model Photo {
   iso                Int?
   width              Int?
   height             Int?
+  originalWidth      Int?
+  originalHeight     Int?
+  originalFileSize   Int?
+  originalFileType   String?
   fileType           String?
   colorProfile       String?
   dominantColor      String?

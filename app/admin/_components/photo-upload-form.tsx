@@ -67,6 +67,7 @@ const emptyFormState = {
   lutFormat: "",
   lutName: "",
   lutVersion: "",
+  originalFileName: "",
 };
 
 export function PhotoUploadForm({
@@ -93,6 +94,7 @@ export function PhotoUploadForm({
   const [isLocationEdited, setIsLocationEdited] = useState(false);
   const [isCountryEdited, setIsCountryEdited] = useState(false);
   const [selectedPresetName, setSelectedPresetName] = useState("");
+  const [selectedOriginalName, setSelectedOriginalName] = useState("");
 
   const resetFormState = () => {
     setForm(emptyFormState);
@@ -106,6 +108,7 @@ export function PhotoUploadForm({
     setIsLocationEdited(false);
     setIsCountryEdited(false);
     setSelectedPresetName("");
+    setSelectedOriginalName("");
   };
 
   useEffect(() => {
@@ -241,6 +244,15 @@ export function PhotoUploadForm({
     }));
   };
 
+  const handleOriginalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    setSelectedOriginalName(file?.name ?? "");
+    setForm((current) => ({
+      ...current,
+      originalFileName: file?.name ?? "",
+    }));
+  };
+
   return (
     <form
       ref={formRef}
@@ -339,6 +351,20 @@ export function PhotoUploadForm({
             type="file"
           />
         </Field>
+        <Field label="Original Image (Optional)">
+          <input
+            accept="image/jpeg,image/jpg,image/png,image/tiff"
+            className={`${inputClassName} file:mr-3 file:rounded file:border-0 file:bg-amber-200 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-black`}
+            name="originalImage"
+            onChange={handleOriginalChange}
+            type="file"
+          />
+        </Field>
+        {selectedOriginalName ? (
+          <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+            Selected original: {selectedOriginalName}
+          </p>
+        ) : null}
         {selectedPresetName ? (
           <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
             Selected preset: {selectedPresetName}

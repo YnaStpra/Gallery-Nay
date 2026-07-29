@@ -24,6 +24,8 @@ import { keyboardShortcuts } from "@/src/lib/keyboard-shortcuts";
 import type { GalleryPhoto } from "@/src/lib/gallery-data";
 import { DownloadRequestPanel } from "./DownloadRequestPanel";
 import { ModalCloseButton } from "./ModalCloseButton";
+import { BeforeAfterButton } from "@/components/photo/BeforeAfterButton";
+import { BeforeAfterModal } from "@/components/photo/BeforeAfterModal";
 import { PhotoPalette } from "./PhotoPalette";
 import { getPreviewImageSize } from "./photo-utils";
 import { NearbyPhotos } from "@/components/NearbyPhotos";
@@ -297,6 +299,7 @@ export function PhotoModal({
   const histogramRef = useRef<HTMLDivElement>(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [compareOpen, setCompareOpen] = useState(false);
 
   const accent = useMemo(
     () => photo.dominantColor || "#22d3ee",
@@ -603,6 +606,7 @@ export function PhotoModal({
             paletteRef={paletteRef}
             histogramRef={histogramRef}
             nearbyRef={nearbyRef}
+            onOpenCompare={() => setCompareOpen(true)}
           />
         </aside>
 
@@ -643,12 +647,19 @@ export function PhotoModal({
                     paletteRef={paletteRef}
                     histogramRef={histogramRef}
                     nearbyRef={nearbyRef}
+                    onOpenCompare={() => setCompareOpen(true)}
                   />
                 </div>
               </div>
             </div>
           </motion.div>
         ) : null}
+
+      <BeforeAfterModal
+        photo={photo}
+        open={compareOpen}
+        onClose={() => setCompareOpen(false)}
+      />
       </div>
     </motion.div>
   );
@@ -662,6 +673,7 @@ function PhotoSidebar({
   paletteRef,
   histogramRef,
   nearbyRef,
+  onOpenCompare,
 }: {
   photo: GalleryPhoto;
   accent: string;
@@ -670,6 +682,7 @@ function PhotoSidebar({
   paletteRef: React.RefObject<HTMLDivElement | null>;
   histogramRef: React.RefObject<HTMLDivElement | null>;
   nearbyRef: React.RefObject<HTMLDivElement | null>;
+  onOpenCompare: () => void;
 }) {
   const { isFavorited, toggleFavorite } = useFavorites();
   const shareUrl =
@@ -693,6 +706,19 @@ function PhotoSidebar({
 
       <PhotoFacts photo={photo} accent={accent} formattedCapture={formattedCapture} />
       <EditingPresetCard photo={photo} />
+      <div className="flex flex-wrap gap-2">
+        <span className="rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-300">
+          Edited Image Available
+        </span>
+        {photo.originalImageUrl ? (
+          <span className="rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-300">
+            Original Image Available
+          </span>
+        ) : null}
+      </div>
+      {photo.originalImageUrl ? (
+        <BeforeAfterButton onClick={onOpenCompare} />
+      ) : null}
 
       <div className="rounded-[24px] border border-white/10 bg-white/5 p-4 text-sm text-zinc-400">
         <div className="flex items-center gap-3">
