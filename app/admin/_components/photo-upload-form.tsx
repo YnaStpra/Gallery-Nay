@@ -68,6 +68,7 @@ const emptyFormState = {
   lutName: "",
   lutVersion: "",
   originalFileName: "",
+  metadataJson: "",
 };
 
 export function PhotoUploadForm({
@@ -200,6 +201,7 @@ export function PhotoUploadForm({
         next.iso = draft.iso ?? next.iso;
         next.takenAt = draft.takenAt ?? next.takenAt;
         next.dominantColor = draft.dominantColor ?? next.dominantColor;
+        next.metadataJson = draft.metadata ? JSON.stringify(draft.metadata) : "";
 
         return next;
       });
@@ -329,6 +331,8 @@ export function PhotoUploadForm({
           />
         </Field>
       </div>
+
+      <input name="metadata" type="hidden" value={form.metadataJson} />
 
       <div className="grid gap-4 rounded-2xl border border-white/10 bg-black/30 p-4">
         <div>
@@ -684,6 +688,13 @@ export function PhotoUploadForm({
         </div>
         <p className="mt-3 text-xs text-zinc-500">
           Manual edits are preserved after the field has been changed.
+        </p>
+        <p className="mt-2 text-xs text-zinc-500">
+          {metadataStatus === "ready"
+            ? "✓ Metadata Extracted"
+            : metadataStatus === "error"
+              ? "⚠ Some metadata unavailable"
+              : "Select an image to read metadata."}
         </p>
       </div>
 

@@ -39,6 +39,7 @@ model Photo {
   originalFileSize   Int?
   originalFileType   String?
   fileType           String?
+  metadata           Json?
   colorProfile       String?
   dominantColor      String?
   copyright          String?
