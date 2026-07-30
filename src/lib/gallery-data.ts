@@ -35,6 +35,7 @@ export type GalleryPhoto = {
   waitingTime?: string;
   interestingFacts?: string;
   behindTheShot?: string;
+  metadata?: Record<string, Record<string, string>>;
   lutUrl?: string;
   lutFileName?: string;
   lutFormat?: string;
@@ -315,6 +316,7 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       waitingTime: photo.waitingTime ?? undefined,
       interestingFacts: photo.interestingFacts ?? undefined,
       behindTheShot: photo.behindTheShot ?? undefined,
+      metadata: undefined,
       allowDownload: photo.allowDownload,
       cameraProfile: photo.cameraProfile ?? undefined,
       country: photo.country ?? "Not set",
@@ -342,6 +344,7 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       iso: photo.iso ? String(photo.iso) : "Not set",
       lens: photo.lens ?? "Not set",
       location: photo.location ?? "Not set",
+      metadata: (photo.metadata as Record<string, Record<string, string>>) ?? undefined,
       lutDescription: photo.lutDescription ?? undefined,
       lutFileName: photo.lutFileName ?? undefined,
       lutFileSize: photo.lutFileSize ?? undefined,

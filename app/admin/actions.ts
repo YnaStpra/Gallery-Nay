@@ -12,6 +12,7 @@ import {
 } from "@/src/lib/cloudinary";
 import { slugify } from "@/src/lib/photo-auto-fill";
 import { prisma } from "@/src/lib/prisma";
+import type { Prisma } from "@/src/generated/prisma/client";
 
 export type AdminActionState = {
   message: string;
@@ -271,6 +272,18 @@ export async function uploadPhoto(
         takenAt: getOptionalDate(formData, "takenAt"),
         title,
         width: uploaded.width,
+        metadata: (() => {
+          const value = formData.get("metadata");
+          if (typeof value !== "string" || !value.trim()) {
+            return undefined;
+          }
+
+          try {
+            return JSON.parse(value) as Prisma.InputJsonValue;
+          } catch {
+            return undefined;
+          }
+        })(),
       },
     });
 
