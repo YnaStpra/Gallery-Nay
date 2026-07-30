@@ -157,6 +157,69 @@ function PhotoFacts({
   );
 }
 
+function MetadataSection({
+  title,
+  items,
+}: {
+  title: string;
+  items?: Record<string, string>;
+}) {
+  const entries = Object.entries(items ?? {}).filter(([, value]) => Boolean(value));
+
+  if (entries.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+      <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">
+        {title}
+      </p>
+      <div className="mt-3 grid gap-3">
+        {entries.map(([label, value]) => (
+          <div key={`${title}-${label}`} className="grid gap-1">
+            <span className="text-[11px] uppercase tracking-[0.2em] text-zinc-500">
+              {label}
+            </span>
+            <span className="text-sm text-white">{value}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function LightroomMetadataPanel({ photo }: { photo: GalleryPhoto }) {
+  const metadata = photo.metadata as
+    | Record<string, Record<string, string>>
+    | undefined;
+
+  if (!metadata) {
+    return null;
+  }
+
+  return (
+    <section className="grid gap-4 rounded-[28px] border border-white/10 bg-white/5 p-4">
+      <div>
+        <p className="text-xs uppercase tracking-[0.22em] text-cyan-300">
+          Metadata
+        </p>
+        <h3 className="mt-2 text-lg font-semibold text-white">
+          Lightroom Metadata Panel
+        </h3>
+      </div>
+      <MetadataSection title="FILE" items={metadata.file} />
+      <MetadataSection title="CAMERA" items={metadata.camera} />
+      <MetadataSection title="LENS" items={metadata.lens} />
+      <MetadataSection title="EXPOSURE" items={metadata.exposure} />
+      <MetadataSection title="IMAGE" items={metadata.image} />
+      <MetadataSection title="GPS" items={metadata.gps} />
+      <MetadataSection title="COPYRIGHT" items={metadata.copyright} />
+      <MetadataSection title="EDITING" items={metadata.editing} />
+    </section>
+  );
+}
+
 function formatFileSize(size?: number) {
   if (!size || size <= 0) return "Unknown";
   const mb = size / (1024 * 1024);
@@ -705,6 +768,7 @@ function PhotoSidebar({
       </div>
 
       <PhotoFacts photo={photo} accent={accent} formattedCapture={formattedCapture} />
+      <LightroomMetadataPanel photo={photo} />
       <EditingPresetCard photo={photo} />
       <div className="flex flex-wrap gap-2">
         <span className="rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-300">
