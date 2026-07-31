@@ -39,6 +39,7 @@ export type GalleryPhoto = {
   lutDescription?: string;
   editingSoftware?: string;
   cameraProfile?: string;
+  photographerNotes?: string;
   allowDownload?: boolean;
   isPremium?: boolean;
   uploadedAt?: string;
@@ -318,6 +319,7 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       dominantColor: photo.dominantColor ?? "#64748b",
       blurDataUrl: photo.blurDataUrl ?? undefined,
       editingSoftware: photo.editingSoftware ?? undefined,
+      photographerNotes: photo.photographerNotes ?? undefined,
       fileType: photo.fileType ?? "Display copy",
       focalLength: photo.focalLength ?? "Not set",
       id: photo.id,

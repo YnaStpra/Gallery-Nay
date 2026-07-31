@@ -1,24 +1,16 @@
 "use client";
 
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-  Save,
-  Trash2,
-} from "lucide-react";
+import { Eye, EyeOff, Loader2, Save, Trash2 } from "lucide-react";
 import { useActionState, useState } from "react";
 
 import { ProtectedPhoto } from "@/app/_components/protected-photo";
-import {
-  deletePhoto,
-  updatePhoto,
-} from "@/app/admin/actions";
+import { deletePhoto, updatePhoto } from "@/app/admin/actions";
 import type { AdminActionState } from "@/app/admin/actions";
 
 export type ManagedPhoto = {
   altText: string;
   aperture: string;
+  photographerNotes: string;
   camera: string;
   collection: string;
   colorProfile: string;
@@ -199,6 +191,16 @@ function PhotoManagementCard({
                 className={inputClassName}
                 defaultValue={photo.altText}
                 name="altText"
+              />
+            </Field>
+
+            <Field label="Photographer Notes">
+              <textarea
+                className={`${inputClassName} min-h-28 resize-y normal-case tracking-normal text-zinc-100`}
+                defaultValue={photo.photographerNotes}
+                maxLength={5000}
+                name="photographerNotes"
+                placeholder="Describe the story, technical decisions, or creative process behind this photograph..."
               />
             </Field>
 
