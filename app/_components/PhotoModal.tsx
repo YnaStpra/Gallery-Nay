@@ -31,6 +31,7 @@ import { getPreviewImageSize } from "./photo-utils";
 import { NearbyPhotos } from "@/components/NearbyPhotos";
 import { useKeyboardShortcutsLayer } from "./KeyboardShortcutsLayer";
 import { Histogram } from "@/components/photo/Histogram";
+import { PhotographerNotes } from "@/components/photo/PhotographerNotes";
 
 type Props = {
   photo: GalleryPhoto;
@@ -164,7 +165,12 @@ function formatFileSize(size?: number) {
 }
 
 function EditingPresetCard({ photo }: { photo: GalleryPhoto }) {
-  if (!photo.lutName && !photo.editingSoftware && !photo.cameraProfile && !photo.lutUrl) {
+  if (
+    !photo.lutName &&
+    !photo.editingSoftware &&
+    !photo.cameraProfile &&
+    !photo.lutUrl
+  ) {
     return null;
   }
 
@@ -225,7 +231,9 @@ function EditingPresetCard({ photo }: { photo: GalleryPhoto }) {
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
                   Format
                 </p>
-                <p className="mt-1 text-white">{photo.lutFormat.toUpperCase()}</p>
+                <p className="mt-1 text-white">
+                  {photo.lutFormat.toUpperCase()}
+                </p>
               </div>
             ) : null}
             <div>
@@ -241,7 +249,9 @@ function EditingPresetCard({ photo }: { photo: GalleryPhoto }) {
             <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
               Description
             </p>
-            <p className="mt-1 leading-6 text-zinc-200">{photo.lutDescription}</p>
+            <p className="mt-1 leading-6 text-zinc-200">
+              {photo.lutDescription}
+            </p>
           </div>
         ) : null}
       </div>
@@ -317,7 +327,9 @@ export function PhotoModal({
       () => [
         {
           id: "photo-previous",
-          keys: keyboardShortcuts.find((item) => item.id === "previous")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "previous")?.keys ??
+            [],
           handler: () => {
             if (hasPrevious) onPrevious();
           },
@@ -325,7 +337,8 @@ export function PhotoModal({
         },
         {
           id: "photo-next",
-          keys: keyboardShortcuts.find((item) => item.id === "next")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "next")?.keys ?? [],
           handler: () => {
             if (hasNext) onNext();
           },
@@ -333,31 +346,37 @@ export function PhotoModal({
         },
         {
           id: "photo-close",
-          keys: keyboardShortcuts.find((item) => item.id === "close")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "close")?.keys ?? [],
           handler: () => onClose(),
           enabled: isOpen,
         },
         {
           id: "photo-help",
-          keys: keyboardShortcuts.find((item) => item.id === "help")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "help")?.keys ?? [],
           handler: () => openHelp(),
           enabled: isOpen,
         },
         {
           id: "photo-favorite",
-          keys: keyboardShortcuts.find((item) => item.id === "favorite")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "favorite")?.keys ??
+            [],
           handler: () => toggleFavorite(photo.id),
           enabled: isOpen,
         },
         {
           id: "photo-like",
-          keys: keyboardShortcuts.find((item) => item.id === "like")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "like")?.keys ?? [],
           handler: () => toggleFavorite(photo.id),
           enabled: isOpen,
         },
         {
           id: "photo-copy",
-          keys: keyboardShortcuts.find((item) => item.id === "copy")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "copy")?.keys ?? [],
           handler: async () => {
             await navigator.clipboard.writeText(shareUrl);
           },
@@ -365,7 +384,8 @@ export function PhotoModal({
         },
         {
           id: "photo-share",
-          keys: keyboardShortcuts.find((item) => item.id === "share")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "share")?.keys ?? [],
           handler: async () => {
             if (navigator.share) {
               await navigator.share({
@@ -394,7 +414,9 @@ export function PhotoModal({
         },
         {
           id: "photo-metadata",
-          keys: keyboardShortcuts.find((item) => item.id === "metadata")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "metadata")?.keys ??
+            [],
           handler: () => {
             setShowSidebar((current) => !current);
           },
@@ -402,58 +424,85 @@ export function PhotoModal({
         },
         {
           id: "photo-palette",
-          keys: keyboardShortcuts.find((item) => item.id === "palette")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "palette")?.keys ?? [],
           handler: () => {
-            paletteRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            paletteRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
           },
           enabled: isOpen,
         },
         {
           id: "photo-histogram",
-          keys: keyboardShortcuts.find((item) => item.id === "histogram")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "histogram")?.keys ??
+            [],
           handler: () => {
-            histogramRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            histogramRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
           },
           enabled: isOpen,
         },
         {
           id: "photo-similar",
-          keys: keyboardShortcuts.find((item) => item.id === "similar")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "similar")?.keys ?? [],
           handler: () => {
-            nearbyRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            nearbyRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
           },
           enabled: isOpen,
         },
         {
           id: "photo-download",
-          keys: keyboardShortcuts.find((item) => item.id === "download")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "download")?.keys ??
+            [],
           handler: () => {
-            downloadRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            downloadRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
           },
           enabled: isOpen,
         },
         {
           id: "photo-zoom-toggle",
-          keys: keyboardShortcuts.find((item) => item.id === "zoom-toggle")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "zoom-toggle")?.keys ??
+            [],
           handler: () => setZoom((current) => (current === 1 ? 1.2 : 1)),
           enabled: isOpen,
         },
         {
           id: "photo-zoom-reset",
-          keys: keyboardShortcuts.find((item) => item.id === "zoom-reset")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "zoom-reset")?.keys ??
+            [],
           handler: () => setZoom(1),
           enabled: isOpen,
         },
         {
           id: "photo-zoom-in",
-          keys: keyboardShortcuts.find((item) => item.id === "zoom-in")?.keys ?? [],
-          handler: () => setZoom((current) => Math.min(3, +(current + 0.2).toFixed(1))),
+          keys:
+            keyboardShortcuts.find((item) => item.id === "zoom-in")?.keys ?? [],
+          handler: () =>
+            setZoom((current) => Math.min(3, +(current + 0.2).toFixed(1))),
           enabled: isOpen,
         },
         {
           id: "photo-zoom-out",
-          keys: keyboardShortcuts.find((item) => item.id === "zoom-out")?.keys ?? [],
-          handler: () => setZoom((current) => Math.max(1, +(current - 0.2).toFixed(1))),
+          keys:
+            keyboardShortcuts.find((item) => item.id === "zoom-out")?.keys ??
+            [],
+          handler: () =>
+            setZoom((current) => Math.max(1, +(current - 0.2).toFixed(1))),
           enabled: isOpen,
         },
       ],
@@ -497,7 +546,9 @@ export function PhotoModal({
   };
 
   const zoomStyle =
-    zoom === 1 ? undefined : { transform: `scale(${zoom})`, transformOrigin: "center" };
+    zoom === 1
+      ? undefined
+      : { transform: `scale(${zoom})`, transformOrigin: "center" };
 
   return (
     <motion.div
@@ -506,7 +557,11 @@ export function PhotoModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-black/60"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-4 sm:p-6">
         <ModalCloseButton
@@ -538,7 +593,9 @@ export function PhotoModal({
           <div className="absolute left-4 top-4 flex gap-2 lg:left-4 lg:top-auto lg:inset-y-0 lg:items-center">
             <button
               type="button"
-              onClick={() => setZoom((current) => Math.min(3, +(current + 0.2).toFixed(1)))}
+              onClick={() =>
+                setZoom((current) => Math.min(3, +(current + 0.2).toFixed(1)))
+              }
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white transition hover:border-white/20 hover:bg-white/10"
               aria-label="Zoom in"
             >
@@ -546,7 +603,9 @@ export function PhotoModal({
             </button>
             <button
               type="button"
-              onClick={() => setZoom((current) => Math.max(1, +(current - 0.2).toFixed(1)))}
+              onClick={() =>
+                setZoom((current) => Math.max(1, +(current - 0.2).toFixed(1)))
+              }
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white transition hover:border-white/20 hover:bg-white/10"
               aria-label="Zoom out"
             >
@@ -655,11 +714,11 @@ export function PhotoModal({
           </motion.div>
         ) : null}
 
-      <BeforeAfterModal
-        photo={photo}
-        open={compareOpen}
-        onClose={() => setCompareOpen(false)}
-      />
+        <BeforeAfterModal
+          photo={photo}
+          open={compareOpen}
+          onClose={() => setCompareOpen(false)}
+        />
       </div>
     </motion.div>
   );
@@ -704,7 +763,19 @@ function PhotoSidebar({
         </p>
       </div>
 
-      <PhotoFacts photo={photo} accent={accent} formattedCapture={formattedCapture} />
+      <PhotoFacts
+        photo={photo}
+        accent={accent}
+        formattedCapture={formattedCapture}
+      />
+      <PhotographerNotes
+        notes={photo.photographerNotes}
+        shareText={
+          photo.story
+            ? `${photo.title}\n\n${photo.photographerNotes}`
+            : photo.photographerNotes
+        }
+      />
       <EditingPresetCard photo={photo} />
       <div className="flex flex-wrap gap-2">
         <span className="rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-300">
@@ -722,7 +793,10 @@ function PhotoSidebar({
 
       <div className="rounded-[24px] border border-white/10 bg-white/5 p-4 text-sm text-zinc-400">
         <div className="flex items-center gap-3">
-          <span className="inline-block h-3 w-8 rounded-full" style={{ backgroundColor: accent }} />
+          <span
+            className="inline-block h-3 w-8 rounded-full"
+            style={{ backgroundColor: accent }}
+          />
           <span className="text-xs uppercase tracking-[0.22em] text-zinc-400">
             Dominant tone
           </span>
@@ -748,7 +822,10 @@ function PhotoSidebar({
           </p>
           <div className="mt-4 grid gap-3">
             <div ref={downloadRef}>
-              <DownloadRequestPanel photoId={photo.id} photoTitle={photo.title} />
+              <DownloadRequestPanel
+                photoId={photo.id}
+                photoTitle={photo.title}
+              />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -756,7 +833,9 @@ function PhotoSidebar({
                 onClick={() => toggleFavorite(photo.id)}
                 className="inline-flex items-center justify-center gap-2 rounded-md border border-white/10 px-3 py-2 text-sm text-zinc-200 transition hover:border-red-300/30 hover:bg-red-300/5"
               >
-                <Heart className={`size-4 ${isFavorited(photo.id) ? "fill-red-400 text-red-400" : "text-zinc-400"}`} />
+                <Heart
+                  className={`size-4 ${isFavorited(photo.id) ? "fill-red-400 text-red-400" : "text-zinc-400"}`}
+                />
                 Favorite
               </button>
               <button
@@ -774,11 +853,13 @@ function PhotoSidebar({
               type="button"
               onClick={() => {
                 if (navigator.share) {
-                  navigator.share({
-                    title: photo.title,
-                    text: `Yan Saputra Photography - ${photo.title}`,
-                    url: shareUrl,
-                  }).catch(() => undefined);
+                  navigator
+                    .share({
+                      title: photo.title,
+                      text: `Yan Saputra Photography - ${photo.title}`,
+                      url: shareUrl,
+                    })
+                    .catch(() => undefined);
                 }
               }}
               className="inline-flex items-center justify-center gap-2 rounded-md border border-white/10 px-3 py-2 text-sm text-zinc-200 transition hover:border-cyan-300/30 hover:bg-white/5"

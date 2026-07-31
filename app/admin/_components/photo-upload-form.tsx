@@ -43,6 +43,7 @@ const initialAdminActionState: AdminActionState = {
 const emptyFormState = {
   allowDownload: false,
   cameraProfile: "",
+  photographerNotes: "",
   title: "",
   slug: "",
   description: "",
@@ -141,23 +142,22 @@ export function PhotoUploadForm({
     if (name === "country" && markEdited) setIsCountryEdited(true);
   };
 
-  const popup =
-    pending
+  const popup = pending
+    ? {
+        kind: "loading" as const,
+        message: state.message || "Upload sedang di proses",
+      }
+    : state.status === "success"
       ? {
-          kind: "loading" as const,
-          message: state.message || "Upload sedang di proses",
+          kind: "success" as const,
+          message: state.message || "Upload berhasil",
         }
-      : state.status === "success"
+      : state.status === "error"
         ? {
-            kind: "success" as const,
-            message: state.message || "Upload berhasil",
+            kind: "error" as const,
+            message: state.message || "Upload gagal",
           }
-        : state.status === "error"
-          ? {
-              kind: "error" as const,
-              message: state.message || "Upload gagal",
-            }
-          : null;
+        : null;
 
   const applyMetadata = async (file: File) => {
     try {
@@ -240,7 +240,7 @@ export function PhotoUploadForm({
     setForm((current) => ({
       ...current,
       lutFileName: file?.name ?? "",
-      lutFormat: file ? file.name.split(".").pop()?.toUpperCase() ?? "" : "",
+      lutFormat: file ? (file.name.split(".").pop()?.toUpperCase() ?? "") : "",
     }));
   };
 
@@ -388,7 +388,9 @@ export function PhotoUploadForm({
               name="lutVersion"
               placeholder="2.1"
               value={form.lutVersion}
-              onChange={(event) => updateField("lutVersion", event.target.value)}
+              onChange={(event) =>
+                updateField("lutVersion", event.target.value)
+              }
             />
           </Field>
           <Field label="Editing Software">
@@ -502,6 +504,22 @@ export function PhotoUploadForm({
         />
       </Field>
 
+      <Field label="Photographer Notes">
+        <textarea
+          className={`${inputClassName} min-h-32 resize-y`}
+          maxLength={5000}
+          name="photographerNotes"
+          placeholder="Describe the story, technical decisions, or creative process behind this photograph..."
+          value={form.photographerNotes}
+          onChange={(event) =>
+            updateField("photographerNotes", event.target.value, true)
+          }
+        />
+        <p className="text-xs text-zinc-500">
+          Optional. Recommended length: 200–1000 characters.
+        </p>
+      </Field>
+
       <Field label="Alt text">
         <input
           className={inputClassName}
@@ -521,7 +539,9 @@ export function PhotoUploadForm({
             name="location"
             placeholder="Makassar, Sulawesi Selatan"
             value={form.location}
-            onChange={(event) => updateField("location", event.target.value, true)}
+            onChange={(event) =>
+              updateField("location", event.target.value, true)
+            }
           />
         </Field>
 
@@ -532,7 +552,9 @@ export function PhotoUploadForm({
             name="country"
             placeholder="Indonesia"
             value={form.country}
-            onChange={(event) => updateField("country", event.target.value, true)}
+            onChange={(event) =>
+              updateField("country", event.target.value, true)
+            }
           />
         </Field>
 
@@ -601,7 +623,9 @@ export function PhotoUploadForm({
             name="shutterSpeed"
             placeholder="1/640"
             value={form.shutterSpeed}
-            onChange={(event) => updateField("shutterSpeed", event.target.value)}
+            onChange={(event) =>
+              updateField("shutterSpeed", event.target.value)
+            }
           />
         </Field>
 
@@ -638,7 +662,9 @@ export function PhotoUploadForm({
             name="colorProfile"
             placeholder="sRGB"
             value={form.colorProfile}
-            onChange={(event) => updateField("colorProfile", event.target.value)}
+            onChange={(event) =>
+              updateField("colorProfile", event.target.value)
+            }
           />
         </Field>
 

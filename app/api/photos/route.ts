@@ -21,6 +21,7 @@ export async function GET() {
         width: true,
         height: true,
         takenAt: true,
+        photographerNotes: true,
       },
       orderBy: { createdAt: "desc" },
     });
