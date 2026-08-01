@@ -318,7 +318,6 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       waitingTime: photo.waitingTime ?? undefined,
       interestingFacts: photo.interestingFacts ?? undefined,
       behindTheShot: photo.behindTheShot ?? undefined,
-      metadata: undefined,
       allowDownload: photo.allowDownload,
       cameraProfile: photo.cameraProfile ?? undefined,
       country: photo.country ?? "Not set",
