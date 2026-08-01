@@ -95,14 +95,20 @@ export async function getCollections(): Promise<GalleryCollection[]> {
     orderBy: { createdAt: "desc" },
     include: {
       photos: {
-        where: { published: true },
         orderBy: [{ takenAt: "desc" }, { createdAt: "desc" }],
       },
     },
   });
 
+  const hasPublishedPhotos = collections.some((collection) =>
+    collection.photos.some((photo) => photo.published),
+  );
+
   return collections.map((collection) => {
-    const photos = collection.photos.map(mapPhoto);
+    const visiblePhotos = collection.photos.filter(
+      (photo) => photo.published || !hasPublishedPhotos,
+    );
+    const photos = visiblePhotos.map(mapPhoto);
     const coverPhoto = photos[0];
 
     return {
@@ -134,7 +140,6 @@ export async function getCollectionBySlug(
     where: { slug },
     include: {
       photos: {
-        where: { published: true },
         orderBy: [{ takenAt: "desc" }, { createdAt: "desc" }],
       },
     },
@@ -144,7 +149,11 @@ export async function getCollectionBySlug(
     return null;
   }
 
-  const photos = collection.photos.map(mapPhoto);
+  const hasPublishedPhotos = collection.photos.some((photo) => photo.published);
+  const visiblePhotos = collection.photos.filter(
+    (photo) => photo.published || !hasPublishedPhotos,
+  );
+  const photos = visiblePhotos.map(mapPhoto);
   const coverPhoto = photos[0];
 
   return {

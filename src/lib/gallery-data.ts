@@ -30,14 +30,11 @@ export type GalleryPhoto = {
   originalFileType?: string;
   blurDataUrl?: string;
   copyright: string;
-<<<<<<< HEAD
   shootingConditions?: string;
   shootingChallenges?: string;
   waitingTime?: string;
   interestingFacts?: string;
   behindTheShot?: string;
-=======
->>>>>>> main
   metadata?: Record<string, Record<string, string>>;
   lutUrl?: string;
   lutFileName?: string;
@@ -296,7 +293,6 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
   try {
     const photos = await prisma.photo.findMany({
       orderBy: [{ takenAt: "desc" }, { createdAt: "desc" }],
-      where: { published: true },
     });
 
     if (photos.length === 0) {
@@ -307,7 +303,10 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       }));
     }
 
-    return photos.map((photo) => ({
+    const visiblePhotos = photos.filter((photo) => photo.published);
+    const activePhotos = visiblePhotos.length > 0 ? visiblePhotos : photos;
+
+    return activePhotos.map((photo) => ({
       alt: photo.altText ?? photo.title,
       aperture: photo.aperture ?? "Not set",
       camera: photo.camera ?? "Not set",
@@ -347,12 +346,8 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       iso: photo.iso ? String(photo.iso) : "Not set",
       lens: photo.lens ?? "Not set",
       location: photo.location ?? "Not set",
-<<<<<<< HEAD
       metadata:
         (photo.metadata as Record<string, Record<string, string>>) ?? undefined,
-=======
-      metadata: (photo.metadata as Record<string, Record<string, string>>) ?? undefined,
->>>>>>> main
       lutDescription: photo.lutDescription ?? undefined,
       lutFileName: photo.lutFileName ?? undefined,
       lutFileSize: photo.lutFileSize ?? undefined,

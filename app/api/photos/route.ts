@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const photos = await prisma.photo.findMany({
-      where: { published: true },
       select: {
         id: true,
         title: true,
@@ -28,11 +27,17 @@ export async function GET() {
         interestingFacts: true,
         behindTheShot: true,
         photographerNotes: true,
+        published: true,
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(photos);
+    const hasPublishedPhotos = photos.some((photo) => photo.published);
+    const visiblePhotos = hasPublishedPhotos
+      ? photos.filter((photo) => photo.published)
+      : photos;
+
+    return NextResponse.json(visiblePhotos);
   } catch (error) {
     console.error("Failed to get photos", error);
     return NextResponse.json(
