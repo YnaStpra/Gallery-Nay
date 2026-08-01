@@ -57,6 +57,14 @@ function getNullableText(formData: FormData, name: string) {
   return getOptionalText(formData, name) ?? null;
 }
 
+function getOptionalNotes(formData: FormData, name: string) {
+  const value = getText(formData, name);
+  if (value.length > 5000) {
+    throw new Error("Photographer Notes maksimal 5000 karakter.");
+  }
+  return value.length > 0 ? value.trim() : null;
+}
+
 function getNullableInteger(formData: FormData, name: string) {
   return getOptionalInteger(formData, name) ?? null;
 }
@@ -173,6 +181,18 @@ export async function uploadPhoto(
     const presetDescription = getOptionalText(formData, "lutDescription");
     const editingSoftware = getOptionalText(formData, "editingSoftware");
     const cameraProfile = getOptionalText(formData, "cameraProfile");
+    let photographerNotes: string | null;
+
+    try {
+      photographerNotes = getOptionalNotes(formData, "photographerNotes");
+    } catch (error) {
+      return fail(
+        error instanceof Error
+          ? error.message
+          : "Photographer Notes tidak valid.",
+      );
+    }
+
     const allowDownload = formData.get("allowDownload") === "on";
     const isPremium = formData.get("isPremium") === "on";
     const uploaded = await uploadPhotoToCloudinary(image, {
@@ -180,13 +200,21 @@ export async function uploadPhoto(
       location,
       title,
     });
-    const originalFile = originalImage instanceof File && originalImage.size > 0 ? originalImage : null;
+    const originalFile =
+      originalImage instanceof File && originalImage.size > 0
+        ? originalImage
+        : null;
     const uploadedOriginal = originalFile
-      ? await uploadOriginalImageToCloudinary(originalFile, { fileName: originalFile.name })
+      ? await uploadOriginalImageToCloudinary(originalFile, {
+          fileName: originalFile.name,
+        })
       : null;
-    const presetFile = preset instanceof File && preset.size > 0 ? preset : null;
+    const presetFile =
+      preset instanceof File && preset.size > 0 ? preset : null;
     const uploadedPreset = presetFile
-      ? await uploadRawFileToCloudinary(presetFile, { fileName: presetFile.name })
+      ? await uploadRawFileToCloudinary(presetFile, {
+          fileName: presetFile.name,
+        })
       : null;
 
     const photo = await prisma.photo.create({
@@ -201,6 +229,11 @@ export async function uploadPhoto(
         copyright: getOptionalText(formData, "copyright") ?? "(c) Yan Saputra",
         country: getOptionalText(formData, "country"),
         description: getOptionalText(formData, "description"),
+        shootingConditions: getOptionalText(formData, "shootingConditions"),
+        shootingChallenges: getOptionalText(formData, "shootingChallenges"),
+        waitingTime: getOptionalText(formData, "waitingTime"),
+        interestingFacts: getOptionalText(formData, "interestingFacts"),
+        behindTheShot: getOptionalText(formData, "behindTheShot"),
         dominantColor: getOptionalText(formData, "dominantColor") ?? "#64748b",
         fileType: uploaded.format
           ? `${uploaded.format.toUpperCase()} display copy`
@@ -224,11 +257,14 @@ export async function uploadPhoto(
         lutDescription: presetDescription,
         lutFileName: presetFile?.name ?? null,
         lutFileSize: presetFile?.size ?? null,
-        lutFormat: presetFile ? getFileExtension(presetFile.name).replace(/^\./, "").toUpperCase() : null,
+        lutFormat: presetFile
+          ? getFileExtension(presetFile.name).replace(/^\./, "").toUpperCase()
+          : null,
         lutName: presetName,
         lutUrl: uploadedPreset?.secure_url ?? null,
         lutVersion: presetVersion,
         editingSoftware,
+        photographerNotes,
         published: formData.get("published") === "on",
         uploadedAt: presetFile ? new Date() : null,
         shutterSpeed: getOptionalText(formData, "shutterSpeed"),
@@ -287,6 +323,18 @@ export async function updatePhoto(
   }
 
   try {
+    let photographerNotes: string | null;
+
+    try {
+      photographerNotes = getOptionalNotes(formData, "photographerNotes");
+    } catch (error) {
+      return fail(
+        error instanceof Error
+          ? error.message
+          : "Photographer Notes tidak valid.",
+      );
+    }
+
     const photo = await prisma.photo.update({
       data: {
         altText: getNullableText(formData, "altText"),
@@ -297,6 +345,11 @@ export async function updatePhoto(
         copyright: getNullableText(formData, "copyright"),
         country: getNullableText(formData, "country"),
         description: getNullableText(formData, "description"),
+        shootingConditions: getNullableText(formData, "shootingConditions"),
+        shootingChallenges: getNullableText(formData, "shootingChallenges"),
+        waitingTime: getNullableText(formData, "waitingTime"),
+        interestingFacts: getNullableText(formData, "interestingFacts"),
+        behindTheShot: getNullableText(formData, "behindTheShot"),
         dominantColor: getNullableText(formData, "dominantColor"),
         focalLength: getNullableText(formData, "focalLength"),
         iso: getNullableInteger(formData, "iso"),
@@ -309,6 +362,7 @@ export async function updatePhoto(
         allowDownload: formData.get("allowDownload") === "on",
         cameraProfile: getNullableText(formData, "cameraProfile"),
         editingSoftware: getNullableText(formData, "editingSoftware"),
+        photographerNotes,
         isPremium: formData.get("isPremium") === "on",
         lutDescription: getNullableText(formData, "lutDescription"),
         lutFileName: getNullableText(formData, "lutFileName"),

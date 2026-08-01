@@ -30,6 +30,14 @@ export type GalleryPhoto = {
   originalFileType?: string;
   blurDataUrl?: string;
   copyright: string;
+<<<<<<< HEAD
+  shootingConditions?: string;
+  shootingChallenges?: string;
+  waitingTime?: string;
+  interestingFacts?: string;
+  behindTheShot?: string;
+=======
+>>>>>>> main
   metadata?: Record<string, Record<string, string>>;
   lutUrl?: string;
   lutFileName?: string;
@@ -40,6 +48,7 @@ export type GalleryPhoto = {
   lutDescription?: string;
   editingSoftware?: string;
   cameraProfile?: string;
+  photographerNotes?: string;
   allowDownload?: boolean;
   isPremium?: boolean;
   uploadedAt?: string;
@@ -305,6 +314,12 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       collection: photo.collection ?? "Published Archive",
       colorProfile: photo.colorProfile ?? "sRGB",
       copyright: photo.copyright ?? "(c) Yan Saputra",
+      shootingConditions: photo.shootingConditions ?? undefined,
+      shootingChallenges: photo.shootingChallenges ?? undefined,
+      waitingTime: photo.waitingTime ?? undefined,
+      interestingFacts: photo.interestingFacts ?? undefined,
+      behindTheShot: photo.behindTheShot ?? undefined,
+      metadata: undefined,
       allowDownload: photo.allowDownload,
       cameraProfile: photo.cameraProfile ?? undefined,
       country: photo.country ?? "Not set",
@@ -319,6 +334,7 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       dominantColor: photo.dominantColor ?? "#64748b",
       blurDataUrl: photo.blurDataUrl ?? undefined,
       editingSoftware: photo.editingSoftware ?? undefined,
+      photographerNotes: photo.photographerNotes ?? undefined,
       fileType: photo.fileType ?? "Display copy",
       focalLength: photo.focalLength ?? "Not set",
       id: photo.id,
@@ -331,7 +347,12 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       iso: photo.iso ? String(photo.iso) : "Not set",
       lens: photo.lens ?? "Not set",
       location: photo.location ?? "Not set",
+<<<<<<< HEAD
+      metadata:
+        (photo.metadata as Record<string, Record<string, string>>) ?? undefined,
+=======
       metadata: (photo.metadata as Record<string, Record<string, string>>) ?? undefined,
+>>>>>>> main
       lutDescription: photo.lutDescription ?? undefined,
       lutFileName: photo.lutFileName ?? undefined,
       lutFileSize: photo.lutFileSize ?? undefined,

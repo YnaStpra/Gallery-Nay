@@ -12,6 +12,11 @@ model Photo {
   title              String
   slug               String?
   description        String?
+  shootingConditions String?
+  shootingChallenges String?
+  waitingTime        String?
+  interestingFacts    String?
+  behindTheShot      String?
   imageUrl           String
   originalImageUrl   String?
   cloudinaryPublicId String?
@@ -53,6 +58,7 @@ model Photo {
   lutDescription     String?
   editingSoftware    String?
   cameraProfile      String?
+  photographerNotes  String?
   allowDownload      Boolean   @default(false)
   isPremium          Boolean   @default(false)
   uploadedAt         DateTime?
