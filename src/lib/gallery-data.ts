@@ -344,7 +344,8 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       iso: photo.iso ? String(photo.iso) : "Not set",
       lens: photo.lens ?? "Not set",
       location: photo.location ?? "Not set",
-      metadata: (photo.metadata as Record<string, Record<string, string>>) ?? undefined,
+      metadata:
+        (photo.metadata as Record<string, Record<string, string>>) ?? undefined,
       lutDescription: photo.lutDescription ?? undefined,
       lutFileName: photo.lutFileName ?? undefined,
       lutFileSize: photo.lutFileSize ?? undefined,

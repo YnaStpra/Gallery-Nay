@@ -166,7 +166,9 @@ function MetadataSection({
   title: string;
   items?: Record<string, string>;
 }) {
-  const entries = Object.entries(items ?? {}).filter(([, value]) => Boolean(value));
+  const entries = Object.entries(items ?? {}).filter(([, value]) =>
+    Boolean(value),
+  );
 
   if (entries.length === 0) {
     return null;
