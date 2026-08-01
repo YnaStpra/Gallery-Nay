@@ -66,6 +66,7 @@ export default async function AdminPage() {
     interestingFacts: photo.interestingFacts ?? "",
     behindTheShot: photo.behindTheShot ?? "",
     dominantColor: photo.dominantColor ?? "#64748b",
+    photographerNotes: photo.photographerNotes ?? "",
     focalLength: photo.focalLength ?? "",
     id: photo.id,
     imageUrl: photo.imageUrl,

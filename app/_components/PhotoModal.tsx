@@ -32,6 +32,7 @@ import { getPreviewImageSize } from "./photo-utils";
 import { NearbyPhotos } from "@/components/NearbyPhotos";
 import { useKeyboardShortcutsLayer } from "./KeyboardShortcutsLayer";
 import { Histogram } from "@/components/photo/Histogram";
+import { PhotographerNotes } from "@/components/photo/PhotographerNotes";
 
 type Props = {
   photo: GalleryPhoto;
@@ -874,6 +875,14 @@ function PhotoSidebar({
         formattedCapture={formattedCapture}
       />
       <BehindTheShotCard photo={photo} />
+      <PhotographerNotes
+        notes={photo.photographerNotes}
+        shareText={
+          photo.story
+            ? `${photo.title}\n\n${photo.photographerNotes}`
+            : photo.photographerNotes
+        }
+      />
       <EditingPresetCard photo={photo} />
       <div className="flex flex-wrap gap-2">
         <span className="rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-300">

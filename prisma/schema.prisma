@@ -57,6 +57,7 @@ model Photo {
   lutDescription     String?
   editingSoftware    String?
   cameraProfile      String?
+  photographerNotes  String?
   allowDownload      Boolean   @default(false)
   isPremium          Boolean   @default(false)
   uploadedAt         DateTime?

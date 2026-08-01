@@ -27,6 +27,7 @@ export async function GET() {
         waitingTime: true,
         interestingFacts: true,
         behindTheShot: true,
+        photographerNotes: true,
       },
       orderBy: { createdAt: "desc" },
     });

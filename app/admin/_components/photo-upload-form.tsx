@@ -43,6 +43,7 @@ const initialAdminActionState: AdminActionState = {
 const emptyFormState = {
   allowDownload: false,
   cameraProfile: "",
+  photographerNotes: "",
   title: "",
   slug: "",
   description: "",
@@ -590,6 +591,22 @@ export function PhotoUploadForm({
           </Field>
         </div>
       </div>
+
+      <Field label="Photographer Notes">
+        <textarea
+          className={`${inputClassName} min-h-32 resize-y`}
+          maxLength={5000}
+          name="photographerNotes"
+          placeholder="Describe the story, technical decisions, or creative process behind this photograph..."
+          value={form.photographerNotes}
+          onChange={(event) =>
+            updateField("photographerNotes", event.target.value, true)
+          }
+        />
+        <p className="text-xs text-zinc-500">
+          Optional. Recommended length: 200–1000 characters.
+        </p>
+      </Field>
 
       <Field label="Alt text">
         <input

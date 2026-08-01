@@ -241,8 +241,15 @@ export async function getStorySearchIndex() {
       id: photo.id,
       type: "Photo" as const,
       title: photo.title,
-      subtitle: `${photo.location}, ${photo.country}`,
-      description: [photo.shootingConditions, photo.behindTheShot, photo.story]
+      subtitle: [photo.location, photo.country]
+        .filter(Boolean)
+        .join(" • "),
+      description: [
+        photo.shootingConditions,
+        photo.behindTheShot,
+        photo.photographerNotes,
+        photo.story,
+      ]
         .filter(Boolean)
         .join(" "),
       href: `/#${photo.slug ?? photo.id}`,
