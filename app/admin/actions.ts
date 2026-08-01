@@ -228,6 +228,11 @@ export async function uploadPhoto(
         copyright: getOptionalText(formData, "copyright") ?? "(c) Yan Saputra",
         country: getOptionalText(formData, "country"),
         description: getOptionalText(formData, "description"),
+        shootingConditions: getOptionalText(formData, "shootingConditions"),
+        shootingChallenges: getOptionalText(formData, "shootingChallenges"),
+        waitingTime: getOptionalText(formData, "waitingTime"),
+        interestingFacts: getOptionalText(formData, "interestingFacts"),
+        behindTheShot: getOptionalText(formData, "behindTheShot"),
         dominantColor: getOptionalText(formData, "dominantColor") ?? "#64748b",
         fileType: uploaded.format
           ? `${uploaded.format.toUpperCase()} display copy`
@@ -327,6 +332,11 @@ export async function updatePhoto(
         copyright: getNullableText(formData, "copyright"),
         country: getNullableText(formData, "country"),
         description: getNullableText(formData, "description"),
+        shootingConditions: getNullableText(formData, "shootingConditions"),
+        shootingChallenges: getNullableText(formData, "shootingChallenges"),
+        waitingTime: getNullableText(formData, "waitingTime"),
+        interestingFacts: getNullableText(formData, "interestingFacts"),
+        behindTheShot: getNullableText(formData, "behindTheShot"),
         dominantColor: getNullableText(formData, "dominantColor"),
         focalLength: getNullableText(formData, "focalLength"),
         iso: getNullableInteger(formData, "iso"),

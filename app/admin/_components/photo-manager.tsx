@@ -18,6 +18,11 @@ export type ManagedPhoto = {
   country: string;
   createdAt: string;
   description: string;
+  shootingConditions: string;
+  shootingChallenges: string;
+  waitingTime: string;
+  interestingFacts: string;
+  behindTheShot: string;
   dominantColor: string;
   focalLength: string;
   id: string;
@@ -185,6 +190,55 @@ function PhotoManagementCard({
                 name="description"
               />
             </Field>
+
+            <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">
+                Behind the Shot
+              </p>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <Field label="Shooting conditions">
+                  <input
+                    className={inputClassName}
+                    defaultValue={photo.shootingConditions}
+                    name="shootingConditions"
+                  />
+                </Field>
+
+                <Field label="Waiting time">
+                  <input
+                    className={inputClassName}
+                    defaultValue={photo.waitingTime}
+                    name="waitingTime"
+                  />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4">
+                <Field label="Shooting challenges">
+                  <textarea
+                    className={`${inputClassName} min-h-24 resize-y normal-case tracking-normal text-zinc-100`}
+                    defaultValue={photo.shootingChallenges}
+                    name="shootingChallenges"
+                  />
+                </Field>
+
+                <Field label="Interesting facts">
+                  <textarea
+                    className={`${inputClassName} min-h-24 resize-y normal-case tracking-normal text-zinc-100`}
+                    defaultValue={photo.interestingFacts}
+                    name="interestingFacts"
+                  />
+                </Field>
+
+                <Field label="Behind the shot">
+                  <textarea
+                    className={`${inputClassName} min-h-28 resize-y normal-case tracking-normal text-zinc-100`}
+                    defaultValue={photo.behindTheShot}
+                    name="behindTheShot"
+                  />
+                </Field>
+              </div>
+            </div>
 
             <Field label="Alt text">
               <input

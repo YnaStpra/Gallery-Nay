@@ -11,6 +11,7 @@ type SearchItem = {
   type: "Photo" | "Story" | "Collection" | "Album" | "Location" | "Country";
   title: string;
   subtitle: string;
+  description?: string;
   href: string;
 };
 
@@ -28,7 +29,8 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
       () => [
         {
           id: "search-close",
-          keys: keyboardShortcuts.find((item) => item.id === "close")?.keys ?? [],
+          keys:
+            keyboardShortcuts.find((item) => item.id === "close")?.keys ?? [],
           handler: () => onClose(),
           enabled: open,
         },
@@ -64,8 +66,8 @@ export function SearchPalette({ open, onClose }: SearchPaletteProps) {
     const searchableItems = items ?? [];
     if (!normalized) return searchableItems;
     return searchableItems.filter((item) =>
-      [item.title, item.subtitle, item.type].some((value) =>
-        value.toLowerCase().includes(normalized),
+      [item.title, item.subtitle, item.description, item.type].some((value) =>
+        value?.toLowerCase().includes(normalized),
       ),
     );
   }, [items, query]);

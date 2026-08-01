@@ -12,6 +12,11 @@ model Photo {
   title              String
   slug               String?
   description        String?
+  shootingConditions String?
+  shootingChallenges String?
+  waitingTime        String?
+  interestingFacts    String?
+  behindTheShot      String?
   imageUrl           String
   originalImageUrl   String?
   cloudinaryPublicId String?

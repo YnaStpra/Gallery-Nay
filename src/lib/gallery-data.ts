@@ -30,6 +30,11 @@ export type GalleryPhoto = {
   originalFileType?: string;
   blurDataUrl?: string;
   copyright: string;
+  shootingConditions?: string;
+  shootingChallenges?: string;
+  waitingTime?: string;
+  interestingFacts?: string;
+  behindTheShot?: string;
   lutUrl?: string;
   lutFileName?: string;
   lutFormat?: string;
@@ -305,6 +310,11 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
       collection: photo.collection ?? "Published Archive",
       colorProfile: photo.colorProfile ?? "sRGB",
       copyright: photo.copyright ?? "(c) Yan Saputra",
+      shootingConditions: photo.shootingConditions ?? undefined,
+      shootingChallenges: photo.shootingChallenges ?? undefined,
+      waitingTime: photo.waitingTime ?? undefined,
+      interestingFacts: photo.interestingFacts ?? undefined,
+      behindTheShot: photo.behindTheShot ?? undefined,
       allowDownload: photo.allowDownload,
       cameraProfile: photo.cameraProfile ?? undefined,
       country: photo.country ?? "Not set",

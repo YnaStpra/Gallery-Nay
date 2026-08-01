@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import {
   Aperture,
   Camera,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
@@ -162,6 +163,111 @@ function formatFileSize(size?: number) {
   if (!size || size <= 0) return "Unknown";
   const mb = size / (1024 * 1024);
   return `${mb >= 1 ? mb.toFixed(0) : (size / 1024).toFixed(0)} ${mb >= 1 ? "MB" : "KB"}`;
+}
+
+function BehindTheShotCard({ photo }: { photo: GalleryPhoto }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const hasContent = Boolean(
+    photo.shootingConditions ||
+    photo.shootingChallenges ||
+    photo.waitingTime ||
+    photo.interestingFacts ||
+    photo.behindTheShot,
+  );
+
+  if (!hasContent) {
+    return null;
+  }
+
+  return (
+    <section className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+      <button
+        type="button"
+        onClick={() => setIsExpanded((current) => !current)}
+        className="flex w-full items-start justify-between gap-3 text-left"
+      >
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-cyan-300">
+            Behind the Shot
+          </p>
+          <h3 className="mt-2 text-sm font-semibold text-white">
+            Story behind the frame
+          </h3>
+        </div>
+        {isExpanded ? (
+          <ChevronUp className="mt-1 size-4 shrink-0 text-zinc-400" />
+        ) : (
+          <ChevronDown className="mt-1 size-4 shrink-0 text-zinc-400" />
+        )}
+      </button>
+
+      {isExpanded ? (
+        <div className="mt-4 grid gap-4 text-sm">
+          {photo.shootingConditions ? (
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+                Shooting conditions
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {photo.shootingConditions
+                  .split(/,|\n/)
+                  .filter(Boolean)
+                  .map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-cyan-100"
+                    >
+                      {item.trim()}
+                    </span>
+                  ))}
+              </div>
+            </div>
+          ) : null}
+          {photo.waitingTime ? (
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+                Waiting time
+              </p>
+              <p className="mt-1 leading-6 text-zinc-200">
+                {photo.waitingTime}
+              </p>
+            </div>
+          ) : null}
+          {photo.shootingChallenges ? (
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+                Shooting challenges
+              </p>
+              <p className="mt-1 leading-6 whitespace-pre-line text-zinc-200">
+                {photo.shootingChallenges}
+              </p>
+            </div>
+          ) : null}
+          {photo.interestingFacts ? (
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+                Interesting facts
+              </p>
+              <p className="mt-1 leading-6 whitespace-pre-line text-zinc-200">
+                {photo.interestingFacts}
+              </p>
+            </div>
+          ) : null}
+          {photo.behindTheShot ? (
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">
+                Behind the shot
+              </p>
+              <p className="mt-1 leading-7 whitespace-pre-line text-zinc-200">
+                {photo.behindTheShot}
+              </p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
 }
 
 function EditingPresetCard({ photo }: { photo: GalleryPhoto }) {
@@ -768,6 +874,7 @@ function PhotoSidebar({
         accent={accent}
         formattedCapture={formattedCapture}
       />
+      <BehindTheShotCard photo={photo} />
       <PhotographerNotes
         notes={photo.photographerNotes}
         shareText={

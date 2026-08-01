@@ -47,6 +47,11 @@ const emptyFormState = {
   title: "",
   slug: "",
   description: "",
+  shootingConditions: "",
+  shootingChallenges: "",
+  waitingTime: "",
+  interestingFacts: "",
+  behindTheShot: "",
   altText: "",
   location: "",
   country: "",
@@ -503,6 +508,89 @@ export function PhotoUploadForm({
           }
         />
       </Field>
+
+      <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-200">
+              Behind the Shot
+            </p>
+            <p className="mt-2 text-sm text-zinc-400">
+              Bagian opsional untuk menceritakan kondisi pemotretan, tantangan,
+              dan cerita di balik frame.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <Field label="Shooting conditions">
+            <input
+              className={inputClassName}
+              maxLength={160}
+              name="shootingConditions"
+              placeholder="Golden hour, light rain, low tide"
+              value={form.shootingConditions}
+              onChange={(event) =>
+                updateField("shootingConditions", event.target.value)
+              }
+            />
+          </Field>
+
+          <Field label="Waiting time">
+            <input
+              className={inputClassName}
+              maxLength={80}
+              name="waitingTime"
+              placeholder="30 minutes / 2 hours"
+              value={form.waitingTime}
+              onChange={(event) =>
+                updateField("waitingTime", event.target.value)
+              }
+            />
+          </Field>
+        </div>
+
+        <div className="mt-4 grid gap-4">
+          <Field label="Shooting challenges">
+            <textarea
+              className={`${inputClassName} min-h-24 resize-y`}
+              maxLength={600}
+              name="shootingChallenges"
+              placeholder="Apa yang membuat frame ini sulit didapatkan?"
+              value={form.shootingChallenges}
+              onChange={(event) =>
+                updateField("shootingChallenges", event.target.value)
+              }
+            />
+          </Field>
+
+          <Field label="Interesting facts">
+            <textarea
+              className={`${inputClassName} min-h-24 resize-y`}
+              maxLength={600}
+              name="interestingFacts"
+              placeholder="Fakta menarik atau detail teknis yang ingin dibagikan."
+              value={form.interestingFacts}
+              onChange={(event) =>
+                updateField("interestingFacts", event.target.value)
+              }
+            />
+          </Field>
+
+          <Field label="Behind the shot">
+            <textarea
+              className={`${inputClassName} min-h-32 resize-y`}
+              maxLength={1200}
+              name="behindTheShot"
+              placeholder="Ceritakan konteks, mood, atau momen di balik pemotretan ini."
+              value={form.behindTheShot}
+              onChange={(event) =>
+                updateField("behindTheShot", event.target.value)
+              }
+            />
+          </Field>
+        </div>
+      </div>
 
       <Field label="Photographer Notes">
         <textarea
