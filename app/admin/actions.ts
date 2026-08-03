@@ -78,6 +78,20 @@ function getNullableDate(formData: FormData, name: string) {
   return getOptionalDate(formData, name) ?? null;
 }
 
+function parseTags(formData: FormData, name: string) {
+  const value = getText(formData, name);
+  if (!value) {
+    return undefined;
+  }
+
+  const tags = value
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+
+  return tags.length > 0 ? tags : undefined;
+}
+
 function fail(message: string): AdminActionState {
   return {
     message,
