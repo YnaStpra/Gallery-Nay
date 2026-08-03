@@ -166,13 +166,9 @@ function MetadataSection({
   title: string;
   items?: Record<string, string>;
 }) {
-<<<<<<< HEAD
   const entries = Object.entries(items ?? {}).filter(([, value]) =>
     Boolean(value),
   );
-=======
-  const entries = Object.entries(items ?? {}).filter(([, value]) => Boolean(value));
->>>>>>> main
 
   if (entries.length === 0) {
     return null;
@@ -938,7 +934,6 @@ function PhotoSidebar({
         </p>
       </div>
 
-<<<<<<< HEAD
       <PhotoFacts
         photo={photo}
         accent={accent}
@@ -953,9 +948,6 @@ function PhotoSidebar({
             : photo.photographerNotes
         }
       />
-=======
-      <PhotoFacts photo={photo} accent={accent} formattedCapture={formattedCapture} />
->>>>>>> main
       <LightroomMetadataPanel photo={photo} />
       <EditingPresetCard photo={photo} />
       <div className="flex flex-wrap gap-2">

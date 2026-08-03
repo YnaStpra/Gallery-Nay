@@ -6,6 +6,9 @@ import { useActionState, useEffect, useRef, useState } from "react";
 
 import { uploadPhoto } from "@/app/admin/actions";
 import type { AdminActionState } from "@/app/admin/actions";
+import { DraftRecoveryDialog } from "./upload/DraftRecoveryDialog";
+import { KeyboardShortcutOverlay } from "./upload/KeyboardShortcutOverlay";
+import { UploadProgress } from "./upload/UploadProgress";
 import {
   extractPhotoMetadata,
   generateTitleFromFilename,
@@ -39,6 +42,8 @@ const initialAdminActionState: AdminActionState = {
   message: "",
   status: "idle",
 };
+
+const draftStorageKey = "admin-upload-draft";
 
 const emptyFormState = {
   allowDownload: false,
@@ -102,6 +107,17 @@ export function PhotoUploadForm({
   const [isCountryEdited, setIsCountryEdited] = useState(false);
   const [selectedPresetName, setSelectedPresetName] = useState("");
   const [selectedOriginalName, setSelectedOriginalName] = useState("");
+  const [showDraftRecovery, setShowDraftRecovery] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return Boolean(window.localStorage.getItem(draftStorageKey));
+  });
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const collectionInputRef = useRef<HTMLInputElement>(null);
+  const photographerNotesRef = useRef<HTMLTextAreaElement>(null);
 
   const resetFormState = () => {
     setForm(emptyFormState);
@@ -116,6 +132,7 @@ export function PhotoUploadForm({
     setIsCountryEdited(false);
     setSelectedPresetName("");
     setSelectedOriginalName("");
+    window.localStorage.removeItem(draftStorageKey);
   };
 
   useEffect(() => {
@@ -132,6 +149,76 @@ export function PhotoUploadForm({
       router.refresh();
     }
   }, [router, state.status]);
+
+  useEffect(() => {
+    const draft = {
+      form,
+      selectedFileName,
+      selectedPresetName,
+      selectedOriginalName,
+      metadataStatus,
+      metadataMessage,
+    };
+    window.localStorage.setItem(draftStorageKey, JSON.stringify(draft));
+  }, [
+    form,
+    selectedFileName,
+    selectedPresetName,
+    selectedOriginalName,
+    metadataStatus,
+    metadataMessage,
+  ]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTyping =
+        target?.closest("input, textarea, select, form, [contenteditable='true']");
+
+      if (event.key === "Escape") {
+        setShowShortcuts(false);
+        setShowDraftRecovery(false);
+        return;
+      }
+
+      if (isTyping && !(event.ctrlKey || event.metaKey)) {
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        formRef.current?.requestSubmit();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        formRef.current?.requestSubmit();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "l") {
+        event.preventDefault();
+        titleInputRef.current?.focus();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "t") {
+        event.preventDefault();
+        collectionInputRef.current?.focus();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n") {
+        event.preventDefault();
+        photographerNotesRef.current?.focus();
+      }
+
+      if (event.key === "?") {
+        event.preventDefault();
+        setShowShortcuts((current) => !current);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   const updateField = (
     name: keyof typeof emptyFormState,
@@ -162,8 +249,16 @@ export function PhotoUploadForm({
         ? {
             kind: "error" as const,
             message: state.message || "Upload gagal",
-          }
+        }
         : null;
+
+  const progressStage = pending
+    ? ("database" as const)
+    : metadataStatus === "loading"
+      ? ("extract" as const)
+      : metadataStatus === "ready"
+        ? ("complete" as const)
+        : ("idle" as const);
 
   const applyMetadata = async (file: File) => {
     try {
@@ -266,6 +361,41 @@ export function PhotoUploadForm({
       action={formAction}
       className="grid gap-5 rounded-lg border border-white/10 bg-zinc-950 p-5"
     >
+      <DraftRecoveryDialog
+        open={showDraftRecovery}
+        onRestore={() => {
+          const raw = window.localStorage.getItem(draftStorageKey);
+          if (!raw) return;
+
+          try {
+            const draft = JSON.parse(raw) as {
+              form?: typeof emptyFormState;
+              selectedFileName?: string;
+              selectedPresetName?: string;
+              selectedOriginalName?: string;
+              metadataStatus?: "idle" | "loading" | "ready" | "error";
+              metadataMessage?: string;
+            };
+            if (draft.form) setForm(draft.form);
+            setSelectedFileName(draft.selectedFileName ?? "");
+            setSelectedPresetName(draft.selectedPresetName ?? "");
+            setSelectedOriginalName(draft.selectedOriginalName ?? "");
+            setMetadataStatus(draft.metadataStatus ?? "idle");
+            setMetadataMessage(draft.metadataMessage ?? "");
+            setShowDraftRecovery(false);
+          } catch {
+            window.localStorage.removeItem(draftStorageKey);
+          }
+        }}
+        onDiscard={() => {
+          window.localStorage.removeItem(draftStorageKey);
+          setShowDraftRecovery(false);
+        }}
+      />
+      <KeyboardShortcutOverlay
+        open={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
+      />
       {popup ? (
         <div
           className={`fixed right-4 top-4 z-[120] min-w-[240px] rounded-2xl border px-4 py-3 text-sm shadow-2xl shadow-black/30 backdrop-blur-xl ${
@@ -462,6 +592,7 @@ export function PhotoUploadForm({
       <div className="grid gap-4 lg:grid-cols-2">
         <Field label="Judul">
           <input
+            ref={titleInputRef}
             className={inputClassName}
             maxLength={120}
             name="title"
@@ -490,6 +621,7 @@ export function PhotoUploadForm({
 
         <Field label="Collection">
           <input
+            ref={collectionInputRef}
             className={inputClassName}
             maxLength={80}
             name="collection"
@@ -598,6 +730,7 @@ export function PhotoUploadForm({
 
       <Field label="Photographer Notes">
         <textarea
+          ref={photographerNotesRef}
           className={`${inputClassName} min-h-32 resize-y`}
           maxLength={5000}
           name="photographerNotes"
@@ -834,6 +967,17 @@ export function PhotoUploadForm({
         )}
         {pending ? "Uploading..." : "Upload foto"}
       </button>
+
+      <UploadProgress
+        activeStage={progressStage}
+        message={
+          pending
+            ? state.message || "Upload sedang di proses"
+            : metadataStatus === "loading"
+              ? "Reading metadata..."
+              : metadataMessage
+        }
+      />
     </form>
   );
 }
