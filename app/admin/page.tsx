@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Camera, Database, ImagePlus, LockKeyhole } from "lucide-react";
 
-import { PhotoManager } from "./_components/photo-manager";
-import { UploadWorkspace } from "@/src/components/admin/upload/UploadWorkspace";
+import { AdminDashboard } from "./_components/admin-dashboard";
 import {
   getMissingCloudinaryEnv,
   isCloudinaryConfigured,
@@ -18,7 +15,7 @@ export const metadata: Metadata = {
     follow: false,
     index: false,
   },
-  title: "Admin Upload",
+  title: "Admin Dashboard - Yan Saputra Photography",
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
@@ -42,7 +39,7 @@ export default async function AdminPage() {
   const photos = await prisma.photo.findMany({
     orderBy: { createdAt: "desc" },
   });
-  const publishedCount = photos.filter((photo) => photo.published).length;
+
   const collections = Array.from(
     new Set(
       photos
@@ -50,81 +47,6 @@ export default async function AdminPage() {
         .filter((collection): collection is string => Boolean(collection)),
     ),
   ).sort((a, b) => a.localeCompare(b));
-  const photoTags = Array.from(
-    new Set(photos.flatMap((photo) => photo.tags ?? [])),
-  ).sort((a, b) => a.localeCompare(b));
-
-  const photoNotes = Array.from(
-    new Set(
-      photos
-        .map((photo) => photo.photographerNotes)
-        .filter((note): note is string => Boolean(note)),
-    ),
-  ).sort((a, b) => a.localeCompare(b));
-
-  const suggestions = {
-    collections,
-    cameras: Array.from(
-      new Set(
-        photos
-          .map((photo) => photo.camera)
-          .filter((camera): camera is string => Boolean(camera)),
-      ),
-    ).sort((a, b) => a.localeCompare(b)),
-    lenses: Array.from(
-      new Set(
-        photos
-          .map((photo) => photo.lens)
-          .filter((lens): lens is string => Boolean(lens)),
-      ),
-    ).sort((a, b) => a.localeCompare(b)),
-    countries: Array.from(
-      new Set(
-        photos
-          .map((photo) => photo.country)
-          .filter((country): country is string => Boolean(country)),
-      ),
-    ).sort((a, b) => a.localeCompare(b)),
-    software: Array.from(
-      new Set(
-        photos
-          .map((photo) => photo.editingSoftware)
-          .filter((software): software is string => Boolean(software)),
-      ),
-    ).sort((a, b) => a.localeCompare(b)),
-    cameraProfiles: Array.from(
-      new Set(
-        photos
-          .map((photo) => photo.cameraProfile)
-          .filter((profile): profile is string => Boolean(profile)),
-      ),
-    ).sort((a, b) => a.localeCompare(b)),
-    copyrights: Array.from(
-      new Set(
-        photos
-          .map((photo) => photo.copyright)
-          .filter((copyright): copyright is string => Boolean(copyright)),
-      ),
-    ).sort((a, b) => a.localeCompare(b)),
-    locations: Array.from(
-      new Set(
-        photos
-          .map((photo) => photo.location)
-          .filter((location): location is string => Boolean(location)),
-      ),
-    ).sort((a, b) => a.localeCompare(b)),
-    tags: photoTags,
-    photographerNotes: photoNotes,
-  };
-
-  const defaults = {
-    collection: photos[0]?.collection ?? "",
-    country: photos[0]?.country ?? "",
-    camera: photos[0]?.camera ?? "",
-    cameraProfile: photos[0]?.cameraProfile ?? "",
-    editingSoftware: photos[0]?.editingSoftware ?? "",
-    copyright: photos[0]?.copyright ?? "",
-  };
 
   const managedPhotos = photos.map((photo) => ({
     altText: photo.altText ?? "",
@@ -135,6 +57,7 @@ export default async function AdminPage() {
     copyright: photo.copyright ?? "",
     country: photo.country ?? "",
     createdAt: dateFormatter.format(photo.createdAt),
+    createdAtRaw: photo.createdAt.toISOString(),
     description: photo.description ?? "",
     shootingConditions: photo.shootingConditions ?? "",
     shootingChallenges: photo.shootingChallenges ?? "",
@@ -157,129 +80,13 @@ export default async function AdminPage() {
 
   return (
     <main className="min-h-screen bg-[#050505] px-4 py-8 text-zinc-50 sm:px-8 lg:px-12">
-      <div className="mx-auto grid max-w-7xl gap-8">
-        <header className="flex flex-col justify-between gap-5 border-b border-white/10 pb-6 lg:flex-row lg:items-end">
-          <div>
-            <p className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.22em] text-cyan-200">
-              <LockKeyhole className="size-4" aria-hidden />
-              Admin
-            </p>
-            <h1 className="mt-3 text-4xl font-semibold text-white sm:text-5xl">
-              Upload Photo
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              Upload foto ke Cloudinary, simpan metadata ke Neon, dan tampilkan
-              otomatis di homepage.
-            </p>
-            <div className="mt-5">
-              <Link
-                href="/admin/stories"
-                className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
-              >
-                Manage stories
-              </Link>
-              <Link
-                href="/admin/requests"
-                className="ml-3 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
-              >
-                Download requests
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 text-sm text-zinc-400 sm:min-w-[360px]">
-            <div className="rounded-lg border border-white/10 bg-zinc-950 p-4">
-              <Database className="size-5 text-amber-200" aria-hidden />
-              <span className="mt-3 block text-2xl font-semibold text-white">
-                {photos.length}
-              </span>
-              <span>Total records</span>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-zinc-950 p-4">
-              <Camera className="size-5 text-cyan-200" aria-hidden />
-              <span className="mt-3 block text-2xl font-semibold text-white">
-                {publishedCount}
-              </span>
-              <span>Published</span>
-            </div>
-          </div>
-        </header>
-
-        <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <div>
-            <div className="mb-4 flex items-center gap-2">
-              <ImagePlus className="size-5 text-cyan-200" aria-hidden />
-              <h2 className="text-xl font-semibold text-white">New photo</h2>
-            </div>
-            <UploadWorkspace
-              isConfigured={isConfigured}
-              missingConfig={missingConfig}
-              suggestions={suggestions}
-              defaults={defaults}
-            />
-          </div>
-
-          <aside className="rounded-lg border border-white/10 bg-zinc-950 p-5">
-            <h2 className="text-xl font-semibold text-white">Latest uploads</h2>
-            <div className="mt-5 grid gap-3">
-              {photos.length > 0 ? (
-                photos.slice(0, 6).map((photo) => (
-                  <div
-                    key={photo.id}
-                    className="grid gap-3 rounded-md border border-white/10 bg-black p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="truncate font-medium text-white">
-                          {photo.title}
-                        </h3>
-                        <p className="mt-1 text-xs text-zinc-500">
-                          {photo.createdAt
-                            ? dateFormatter.format(photo.createdAt)
-                            : "No date"}
-                        </p>
-                      </div>
-                      <span
-                        className={`rounded px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] ${
-                          photo.published
-                            ? "bg-emerald-300/10 text-emerald-100"
-                            : "bg-zinc-700 text-zinc-300"
-                        }`}
-                      >
-                        {photo.published ? "Live" : "Draft"}
-                      </span>
-                    </div>
-                    <dl className="grid grid-cols-2 gap-3 text-xs text-zinc-400">
-                      <div>
-                        <dt className="uppercase tracking-[0.14em] text-zinc-600">
-                          Location
-                        </dt>
-                        <dd className="mt-1 truncate">
-                          {photo.location ?? "Not set"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="uppercase tracking-[0.14em] text-zinc-600">
-                          Camera
-                        </dt>
-                        <dd className="mt-1 truncate">
-                          {photo.camera ?? "Not set"}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-                ))
-              ) : (
-                <p className="rounded-md border border-dashed border-white/10 p-4 text-sm leading-6 text-zinc-500">
-                  Belum ada foto di database. Setelah upload berhasil, daftar
-                  terbaru akan muncul di sini.
-                </p>
-              )}
-            </div>
-          </aside>
-        </section>
-
-        <PhotoManager collections={collections} photos={managedPhotos} />
+      <div className="mx-auto max-w-7xl">
+        <AdminDashboard
+          collections={collections}
+          isConfigured={isConfigured}
+          missingConfig={missingConfig}
+          photos={managedPhotos}
+        />
       </div>
     </main>
   );

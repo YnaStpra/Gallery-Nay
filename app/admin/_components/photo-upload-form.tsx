@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, RefreshCw, UploadCloud } from "lucide-react";
+import { KeyRound, Loader2, RefreshCw, UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState } from "react";
 
@@ -103,6 +103,22 @@ export function PhotoUploadForm({
   const [isSlugEdited, setIsSlugEdited] = useState(false);
   const [isDescriptionEdited, setIsDescriptionEdited] = useState(false);
   const [isAltTextEdited, setIsAltTextEdited] = useState(false);
+  const [adminKey, setAdminKey] = useState("");
+  const [showKeyInput, setShowKeyInput] = useState(false);
+
+  useEffect(() => {
+    const storedKey = sessionStorage.getItem("admin_key");
+    if (storedKey) {
+      setAdminKey(storedKey);
+    } else {
+      setShowKeyInput(true);
+    }
+  }, []);
+
+  const handleAdminKeyChange = (key: string) => {
+    setAdminKey(key);
+    sessionStorage.setItem("admin_key", key);
+  };
   const [isLocationEdited, setIsLocationEdited] = useState(false);
   const [isCountryEdited, setIsCountryEdited] = useState(false);
   const [selectedPresetName, setSelectedPresetName] = useState("");
@@ -443,17 +459,9 @@ export function PhotoUploadForm({
         </div>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Field label="Admin key">
-          <input
-            className={inputClassName}
-            name="adminKey"
-            placeholder="Masukkan ADMIN_UPLOAD_KEY"
-            required
-            type="password"
-          />
-        </Field>
+      <input name="adminKey" type="hidden" value={adminKey} />
 
+      <div>
         <Field label="Foto">
           <input
             accept="image/avif,image/jpeg,image/png,image/webp"
@@ -945,28 +953,54 @@ export function PhotoUploadForm({
         </p>
       </div>
 
-      <label className="flex items-center gap-3 text-sm text-zinc-300">
-        <input
-          className="size-4 rounded border-white/20 bg-black"
-          defaultChecked
-          name="published"
-          type="checkbox"
-        />
-        Tampilkan di homepage setelah upload
-      </label>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-white/10 pt-4">
+        <label className="flex items-center gap-3 text-sm text-zinc-300">
+          <input
+            className="size-4 rounded border-white/20 bg-black"
+            defaultChecked
+            name="published"
+            type="checkbox"
+          />
+          Tampilkan di homepage setelah upload
+        </label>
 
-      <button
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-cyan-300 px-5 py-2 text-sm font-semibold text-black transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50"
-        disabled={!isConfigured || pending}
-        type="submit"
-      >
-        {pending ? (
-          <Loader2 className="size-4 animate-spin" aria-hidden />
-        ) : (
-          <UploadCloud className="size-4" aria-hidden />
-        )}
-        {pending ? "Uploading..." : "Upload foto"}
-      </button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          {(!adminKey || showKeyInput) ? (
+            <div className="flex items-center gap-2 rounded-md border border-cyan-400/40 bg-black px-3 py-2 text-xs">
+              <KeyRound className="size-4 text-cyan-400 shrink-0" />
+              <input
+                type="password"
+                value={adminKey}
+                onChange={(e) => handleAdminKeyChange(e.target.value)}
+                placeholder="ADMIN_UPLOAD_KEY"
+                className="w-36 bg-transparent text-white outline-none placeholder:text-zinc-500 text-xs"
+                required
+              />
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowKeyInput(true)}
+              className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:underline"
+            >
+              <KeyRound className="size-3.5" /> Key Terpasang
+            </button>
+          )}
+
+          <button
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-cyan-300 px-5 py-2 text-sm font-semibold text-black transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!isConfigured || pending || !adminKey}
+            type="submit"
+          >
+            {pending ? (
+              <Loader2 className="size-4 animate-spin" aria-hidden />
+            ) : (
+              <UploadCloud className="size-4" aria-hidden />
+            )}
+            {pending ? "Uploading..." : "Upload foto"}
+          </button>
+        </div>
+      </div>
 
       <UploadProgress
         activeStage={progressStage}
