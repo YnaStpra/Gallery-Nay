@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Camera, Database, ImagePlus, LockKeyhole } from "lucide-react";
 
 import { PhotoManager } from "./_components/photo-manager";
-import { PhotoUploadForm } from "./_components/photo-upload-form";
+import { UploadWorkspace } from "@/src/components/admin/upload/UploadWorkspace";
 import {
   getMissingCloudinaryEnv,
   isCloudinaryConfigured,
@@ -50,6 +50,82 @@ export default async function AdminPage() {
         .filter((collection): collection is string => Boolean(collection)),
     ),
   ).sort((a, b) => a.localeCompare(b));
+  const photoTags = Array.from(
+    new Set(photos.flatMap((photo) => photo.tags ?? [])),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const photoNotes = Array.from(
+    new Set(
+      photos
+        .map((photo) => photo.photographerNotes)
+        .filter((note): note is string => Boolean(note)),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
+
+  const suggestions = {
+    collections,
+    cameras: Array.from(
+      new Set(
+        photos
+          .map((photo) => photo.camera)
+          .filter((camera): camera is string => Boolean(camera)),
+      ),
+    ).sort((a, b) => a.localeCompare(b)),
+    lenses: Array.from(
+      new Set(
+        photos
+          .map((photo) => photo.lens)
+          .filter((lens): lens is string => Boolean(lens)),
+      ),
+    ).sort((a, b) => a.localeCompare(b)),
+    countries: Array.from(
+      new Set(
+        photos
+          .map((photo) => photo.country)
+          .filter((country): country is string => Boolean(country)),
+      ),
+    ).sort((a, b) => a.localeCompare(b)),
+    software: Array.from(
+      new Set(
+        photos
+          .map((photo) => photo.editingSoftware)
+          .filter((software): software is string => Boolean(software)),
+      ),
+    ).sort((a, b) => a.localeCompare(b)),
+    cameraProfiles: Array.from(
+      new Set(
+        photos
+          .map((photo) => photo.cameraProfile)
+          .filter((profile): profile is string => Boolean(profile)),
+      ),
+    ).sort((a, b) => a.localeCompare(b)),
+    copyrights: Array.from(
+      new Set(
+        photos
+          .map((photo) => photo.copyright)
+          .filter((copyright): copyright is string => Boolean(copyright)),
+      ),
+    ).sort((a, b) => a.localeCompare(b)),
+    locations: Array.from(
+      new Set(
+        photos
+          .map((photo) => photo.location)
+          .filter((location): location is string => Boolean(location)),
+      ),
+    ).sort((a, b) => a.localeCompare(b)),
+    tags: photoTags,
+    photographerNotes: photoNotes,
+  };
+
+  const defaults = {
+    collection: photos[0]?.collection ?? "",
+    country: photos[0]?.country ?? "",
+    camera: photos[0]?.camera ?? "",
+    cameraProfile: photos[0]?.cameraProfile ?? "",
+    editingSoftware: photos[0]?.editingSoftware ?? "",
+    copyright: photos[0]?.copyright ?? "",
+  };
+
   const managedPhotos = photos.map((photo) => ({
     altText: photo.altText ?? "",
     aperture: photo.aperture ?? "",
@@ -135,9 +211,11 @@ export default async function AdminPage() {
               <ImagePlus className="size-5 text-cyan-200" aria-hidden />
               <h2 className="text-xl font-semibold text-white">New photo</h2>
             </div>
-            <PhotoUploadForm
+            <UploadWorkspace
               isConfigured={isConfigured}
               missingConfig={missingConfig}
+              suggestions={suggestions}
+              defaults={defaults}
             />
           </div>
 
